@@ -53,7 +53,7 @@ am very much a novice with these tools; following these instructions would
 probably cause problems for a regular user of a Unix-like system.
 
 In the UCRT64 bash terminal, run the following:
-pacman -S git && git clone https://github.com/acrouzet/libsidplayfp-4ov.git --recurse-submodules && cd libsidplayfp-4ov && ./msys2.sh
+pacman -S git && git clone https://github.com/acrouzet/sidvis-libsidplayfp.git --recurse-submodules && cd sidvis-libsidplayfp && ./msys2.sh
 
 
 -----------------------------------------------------------------------------
