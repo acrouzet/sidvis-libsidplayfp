@@ -55,6 +55,8 @@ probably cause problems for a regular user of a Unix-like system.
 In the UCRT64 bash terminal, run the following:
 pacman -S git && git clone https://github.com/acrouzet/sidvis-libsidplayfp.git --recurse-submodules && cd sidvis-libsidplayfp && ./msys2.sh
 
+The sidplayfp player executable should be in:
+<msys2 install directory>/ucrt64/bin/sidplayfp.exe
 
 -----------------------------------------------------------------------------
 
