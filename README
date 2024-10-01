@@ -9,9 +9,9 @@ environment, constantly aiming to improve emulation of the
 C64 system and the SID chips.
 
 This fork removes the high-pass filtering and oscillator leakage from the 
-SID's output, which allows the SID's DC bias to be cancelled in without any 
-filtering. High-pass filters typically cancel DC bias imperfectly, which can 
-complicate triggering on an oscilloscope.
+SID's output, which allows the SID's DC bias to be cancelled without filtering. 
+High-pass filters typically cancel DC bias imperfectly, which can complicate 
+triggering on an oscilloscope.
 
 Copyright (c) 2000-2001 Simon White
 Copyright (c) 2007-2010 Antti Lankila
