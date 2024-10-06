@@ -52,8 +52,11 @@ to do otherwise and are only using MSYS2 to compile this program. I myself
 am very much a novice with these tools; following these instructions would 
 probably cause problems for a regular user of a Unix-like system.
 
-In the UCRT64 bash terminal, run the following:
-pacman -S git && git clone https://github.com/acrouzet/sidvis-libsidplayfp.git --recurse-submodules && cd sidvis-libsidplayfp && ./msys2.sh
+In the UCRT64 bash terminal, enter the following commands:
+# pacman -S git 
+# git clone https://github.com/acrouzet/sidvis-libsidplayfp.git --recurse-submodules 
+# cd sidvis-libsidplayfp 
+# ./msys2.sh
 
 The sidplayfp player executable should be in:
 <msys2 install directory>/ucrt64/bin/sidplayfp.exe
