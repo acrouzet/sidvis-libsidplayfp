@@ -47,8 +47,9 @@ void ExternalFilter::setClockFrequency(double frequency)
 {
     const double dt = 1. / frequency;
 
-    // Low-pass is set arbitralily high.
-    w0lp_1_s7 = static_cast<int>((dt / (dt + getRC(1, 1e-9))) * (1 << 7) + 0.5);
+    // Low-pass:  R = 10kOhm, C = 1000pF; w0l = dt/(dt+RC) = 1e-6/(1e-6+1e4*1e-9) = 0.091
+    // Cutoff 1/2*PI*RC = 1/2*PI*1e4*1e-9 = 15915.5 Hz
+    w0lp_1_s7 = static_cast<int>((dt / (dt + getRC(10e3, 1000e-12))) * (1 << 7) + 0.5);
 
     // High-pass is disabled.
     w0hp_1_s17 = static_cast<int>(0);
