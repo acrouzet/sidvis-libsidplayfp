@@ -23,6 +23,7 @@
 #include "mixer.h"
 
 #include <cassert>
+#include <cstring>
 #include <algorithm>
 
 #include "sidemu.h"
@@ -43,7 +44,7 @@ void Mixer::resetBufs()
 
 void Mixer::doMix()
 {
-    short *buf = m_sampleBuffer + m_sampleIndex;
+    short *outputBuffer = m_sampleBuffer + m_sampleIndex;
 
     // extract buffer info now that the SID is updated.
     // clock() may update bufferpos.
@@ -51,19 +52,12 @@ void Mixer::doMix()
     const int sampleCount = m_chips.front()->bufferpos();
 
     int i = 0;
-    while (i < sampleCount)
+    while (
+        (i < sampleCount) &&
+        (m_sampleIndex < m_sampleCount) &&      // Handle whatever output the sid has generated so far
+        (i + m_fastForwardFactor < sampleCount) // Are there enough samples to generate the next one?
+    )
     {
-        // Handle whatever output the sid has generated so far
-        if (m_sampleIndex >= m_sampleCount)
-        {
-            break;
-        }
-        // Are there enough samples to generate the next one?
-        if (i + m_fastForwardFactor >= sampleCount)
-        {
-            break;
-        }
-
         // This is a crude boxcar low-pass filter to
         // reduce aliasing during fast forward.
         for (size_t k = 0; k < m_buffers.size(); k++)
@@ -86,7 +80,7 @@ void Mixer::doMix()
         {
             const int_least32_t tmp = (this->*(m_scale[ch]))(ch);
             assert(tmp >= -32768 && tmp <= 32767);
-            *buf++ = static_cast<short>(tmp);
+            *outputBuffer++ = static_cast<short>(tmp);
             m_sampleIndex++;
         }
     }
@@ -94,13 +88,11 @@ void Mixer::doMix()
     // move the unhandled data to start of buffer, if any.
     const int samplesLeft = sampleCount - i;
     std::for_each(m_buffers.begin(), m_buffers.end(), [i, samplesLeft](short *dest) {
-        const short* src = dest + i;
-        for (int j = 0; j < samplesLeft; j++)
-        {
-            dest[j] = src[j];
-        }
+        std::memmove(dest, dest+i, samplesLeft*2);
     });
     std::for_each(m_chips.begin(), m_chips.end(), [samplesLeft](sidemu *s) { s->bufferpos(samplesLeft); });
+
+    m_wait = samplesLeft > m_sampleCount;
 }
 
 void Mixer::begin(short *buffer, uint_least32_t count)
@@ -109,12 +101,6 @@ void Mixer::begin(short *buffer, uint_least32_t count)
 
     // don't allow odd counts for stereo playback
     if (m_stereo && (count & 1))
-        throw badBufferSize();
-
-    // TODO short buffers make the emulator crash, should investigate why
-    //      in the meantime set a reasonable lower bound of 5ms
-    const uint_least32_t lowerBound = m_sampleRate / (m_stereo ? 100 : 200);
-    if (count && (count < lowerBound))
         throw badBufferSize();
 
     m_sampleIndex  = 0;
