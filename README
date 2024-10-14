@@ -8,10 +8,8 @@ the reSID SID chip emulation into a cycle-based emulator
 environment, constantly aiming to improve emulation of the
 C64 system and the SID chips.
 
-This fork removes the external filtering and oscillator leakage from the 
-SID's output, which allows the SID's DC bias to be cancelled without 
-filtering. High-pass filters typically cancel DC bias imperfectly, which
-can complicate triggering on an oscilloscope.
+For information about this fork, please go to the README of
+https://github.com/acrouzet/sidvis-sidplayfp
 
 Copyright (c) 2000-2001 Simon White
 Copyright (c) 2007-2010 Antti Lankila
@@ -43,23 +41,6 @@ Copyright (c) 2010-2024 Leandro Nini <drfiemost@users.sourceforge.net>
 API documentation available online at
 
 https://libsidplayfp.github.io/libsidplayfp/
-
------------------------------------------------------------------------------
-
-* Easy Build on Windows with MSYS2 UCRT64 
-These instructions should only be used by those who would have no idea what 
-to do otherwise and are only using MSYS2 to compile this program. I myself
-am very much a novice with these tools; following these instructions would 
-probably cause problems for a regular user of a Unix-like system.
-
-In the UCRT64 bash terminal, enter the following commands:
-# pacman -S git 
-# git clone https://github.com/acrouzet/sidvis-libsidplayfp.git --recurse-submodules 
-# cd sidvis-libsidplayfp 
-# ./msys2.sh
-
-The sidplayfp player executable should be in:
-<msys2 install directory>/ucrt64/bin/sidplayfp.exe
 
 -----------------------------------------------------------------------------
 
