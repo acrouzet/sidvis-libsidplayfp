@@ -6,6 +6,7 @@ autoreconf -i
 ./configure --enable-hardsid
 make
 make install
+cd ..
 git clone https://github.com/acrouzet/sidvis-sidplayfp.git
 cd sidvis-sidplayfp
 autoreconf -i
