@@ -7,7 +7,7 @@ autoreconf -i
 make
 make install
 git clone https://github.com/acrouzet/sidvis-sidplayfp.git
-cd sidplayfp
+cd sidvis-sidplayfp
 autoreconf -i
 ./configure
 make
