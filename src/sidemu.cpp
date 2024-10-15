@@ -37,31 +37,31 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         // Ignore writes to control register to mute voices
         // Leave test/ring/sync bits untouched
         if (isMuted[0]) data &= 0x0e;
-	// Check and manipulate the high nybble (waveform) of the control register.
-	if (isTgrWavesEnabled) {
-		// If only pulse is enabled, disable pulse and enable sawtooth.
-		if ((data >> 4) == 0x04) data ^= 0x60;
-		// If saw is enabled, disable pulse and tri.
-		if (data & 0x20) data &= 0xaf;
-		// If tri and pulse are both enabled, disable pulse.
-		if ((data & 0x50) == 0x50) data &= 0xbf;
-	}
+	    // Check and manipulate the high nybble (waveform) of the control register.
+	    if (isTgrWavesEnabled) {
+		    // If only pulse is enabled, disable pulse and enable sawtooth.
+		    if ((data >> 4) == 0x04) data ^= 0x60;
+		    // If saw is enabled, disable pulse and tri.
+		    if (data & 0x20) data &= 0xaf;
+		    // If tri and pulse are both enabled, disable pulse.
+		    if ((data & 0x50) == 0x50) data &= 0xbf;
+	    }
         break;
     case 0x0b:
         if (isMuted[1]) data &= 0x0e;
-	if (isTgrWavesEnabled) {
-		if ((data >> 4) == 0x04) data ^= 0x60;
-		if (data & 0x20) data &= 0xaf;
-		if ((data & 0x50) == 0x50) data &= 0xbf;
-	}
+	    if (isTgrWavesEnabled) {
+		    if ((data >> 4) == 0x04) data ^= 0x60;
+		    if (data & 0x20) data &= 0xaf;
+		    if ((data & 0x50) == 0x50) data &= 0xbf;
+	    }
         break;
     case 0x12:
         if (isMuted[2]) data &= 0x0e;
-	if (isTgrWavesEnabled) {
-		if ((data >> 4) == 0x04) data ^= 0x60;
-		if (data & 0x20) data &= 0xaf;
-		if ((data & 0x50) == 0x50) data &= 0xbf;
-	}
+	    if (isTgrWavesEnabled) {
+		    if ((data >> 4) == 0x04) data ^= 0x60;
+		    if (data & 0x20) data &= 0xaf;
+		    if ((data & 0x50) == 0x50) data &= 0xbf;
+	    }
         break;
     case 0x17:
         // Ignore writes to filter register to disable filter
