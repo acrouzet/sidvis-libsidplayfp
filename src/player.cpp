@@ -199,6 +199,13 @@ void Player::filter(unsigned int sidNum, bool enable)
         s->filter(enable);
 }
 
+void Player::tgrwaves(unsigned int sidNum, bool enable)
+{
+    sidemu *s = m_mixer.getSid(sidNum);
+    if (s != nullptr)
+        s->tgrwaves(enable);
+}
+
 /**
  * @throws MOS6510::haltInstruction
  */

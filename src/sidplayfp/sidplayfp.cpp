@@ -101,6 +101,11 @@ void sidplayfp::filter(unsigned int sidNum, bool enable)
     sidplayer.filter(sidNum, enable);
 }
 
+void sidplayfp::tgrwaves(unsigned int sidNum, bool enable)
+{
+    sidplayer.tgrwaves(sidNum, enable);
+}
+
 void sidplayfp::debug(bool enable, FILE *out)
 {
     sidplayer.debug(enable, out);

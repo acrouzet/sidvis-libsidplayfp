@@ -37,12 +37,24 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         // Ignore writes to control register to mute voices
         // Leave test/ring/sync bits untouched
         if (isMuted[0]) data &= 0x0e;
+		if (isTgrWavesEnabled) {
+			if (data & 0x20) data &= 0xaf;
+			if ((data & 0x50) == 0x50) data &= 0xbf;
+		}
         break;
     case 0x0b:
         if (isMuted[1]) data &= 0x0e;
+		if (isTgrWavesEnabled) {
+			if (data & 0x20) data &= 0xaf;
+			if ((data & 0x50) == 0x50) data &= 0xbf;
+		}
         break;
     case 0x12:
         if (isMuted[2]) data &= 0x0e;
+		if (isTgrWavesEnabled) {
+			if (data & 0x20) data &= 0xaf;
+			if ((data & 0x50) == 0x50) data &= 0xbf;
+		}
         break;
     case 0x17:
         // Ignore writes to filter register to disable filter
@@ -68,6 +80,11 @@ void sidemu::voice(unsigned int voice, bool mute)
 void sidemu::filter(bool enable)
 {
     isFilterDisabled = !enable;
+}
+
+void sidemu::tgrwaves(bool enable)
+{
+    isTgrWavesEnabled = enable;
 }
 
 bool sidemu::lock(EventScheduler *scheduler)
