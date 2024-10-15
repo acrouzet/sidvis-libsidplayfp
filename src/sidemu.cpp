@@ -45,7 +45,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
             if (data & 0x20) data &= 0xaf;
             // If tri and pulse are both enabled, disable pulse.
             if ((data & 0x50) == 0x50) data &= 0xbf;
-	    }
+        }
         break;
     case 0x0b:
         if (isMuted[1]) data &= 0x0e;
