@@ -39,7 +39,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         if (isMuted[0]) data &= 0x0e;
         // Check and manipulate the high nybble (waveform) of the control register.
         if (isTgrWavesEnabled) {
-            // If only pulse is enabled, disable pulse and enable sawtooth.
+            // If only pulse is enabled, disable pulse and enable saw.
             if ((data >> 4) == 0x04) data ^= 0x60;
             // If saw is enabled, disable pulse and tri.
             if (data & 0x20) data &= 0xaf;
