@@ -73,7 +73,7 @@ protected:
 
     bool isFilterDisabled = false;
 	
-	bool isTgrWavesEnabled = false;
+    bool isTgrWavesEnabled = false;
 
     /// Flags for muted voices
     std::bitset<4> isMuted;

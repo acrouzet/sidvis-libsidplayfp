@@ -157,7 +157,7 @@ public:
 
     void filter(unsigned int sidNum, bool enable);
 	
-	void tgrwaves(unsigned int sidNum, bool enable);
+    void tgrwaves(unsigned int sidNum, bool enable);
 
     const char *error() const { return m_errorString; }
 
