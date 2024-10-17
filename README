@@ -8,8 +8,8 @@ the reSID SID chip emulation into a cycle-based emulator
 environment, constantly aiming to improve emulation of the
 C64 system and the SID chips.
 
-For information about this fork, please go to the README of
-https://github.com/acrouzet/sidvis-sidplayfp
+This fork is meant to be used with the sidvis .wav creator script.
+For information, please go to https://github.com/acrouzet/sidvis
 
 Copyright (c) 2000-2001 Simon White
 Copyright (c) 2007-2010 Antti Lankila
