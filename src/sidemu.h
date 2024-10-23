@@ -72,11 +72,11 @@ protected:
     bool isLocked = false;
 
     bool isFilterDisabled = false;
-	
-    bool isTgrWavesEnabled = false;
 
     /// Flags for muted voices
     std::bitset<4> isMuted;
+	
+    std::bitset<4> isTgrWavesEnabled;
 
     std::string m_error;
 
@@ -118,16 +118,16 @@ public:
      * @param mute true to mute channel
      */
     void voice(unsigned int voice, bool mute);
+	
+    /**
+     * Enable/disable wave-switching on a voice for oscilloscope external trigger signals.
+     */
+    void tgrwaves(unsigned int voice, bool enable);
 
     /**
      * Enable/disable filter.
      */
     void filter(bool enable);
-	
-    /**
-     * Enable/disable wave-switching for oscilloscope external trigger signals.
-     */
-    void tgrwaves(bool enable);
 
     /**
      * Set SID model.

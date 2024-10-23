@@ -38,7 +38,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         // Leave test/ring/sync bits untouched
         if (isMuted[0]) data &= 0x0e;
         // Check and manipulate the high nybble (waveform) of the control register.
-        if (isTgrWavesEnabled) {
+        if (isTgrWavesEnabled[0]) {
             // If only pulse is enabled, disable pulse and enable saw.
             if ((data >> 4) == 0x04) data ^= 0x60;
             // If saw is enabled, disable pulse and tri.
@@ -48,16 +48,26 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         }
         break;
     case 0x0b:
+<<<<<<< Updated upstream
         if (isMuted[1]) data &= 0x0e;
         if (isTgrWavesEnabled) {
+=======
+        if (isMuted[1]) data &= 0xfe;
+        if (isTgrWavesEnabled[1]) {
+>>>>>>> Stashed changes
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
     case 0x12:
+<<<<<<< Updated upstream
         if (isMuted[2]) data &= 0x0e;
         if (isTgrWavesEnabled) {
+=======
+        if (isMuted[2]) data &= 0xfe;
+        if (isTgrWavesEnabled[2]) {
+>>>>>>> Stashed changes
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -84,14 +94,15 @@ void sidemu::voice(unsigned int voice, bool mute)
         isMuted[voice] = mute;
 }
 
+void sidemu::tgrwaves(unsigned int voice, bool enable)
+{
+    if (voice < 3)
+        isTgrWavesEnabled[voice] = enable;
+}
+
 void sidemu::filter(bool enable)
 {
     isFilterDisabled = !enable;
-}
-
-void sidemu::tgrwaves(bool enable)
-{
-    isTgrWavesEnabled = enable;
 }
 
 bool sidemu::lock(EventScheduler *scheduler)
