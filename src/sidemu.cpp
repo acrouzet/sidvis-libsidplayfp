@@ -34,16 +34,15 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     switch (addr)
     {
     case 0x04:
-        // Ignore writes to control register to mute voices
-        // Leave test/ring/sync bits untouched
-        if (isMuted[0]) data &= 0x0e;
-        // Check and manipulate the high nybble (waveform) of the control register.
+        // Ignore writes to gate bit to mute voices
+        if (isMuted[0]) data &= 0xfe;
+        // Check and manipulate the high nybble (waveform) of the control register
         if (isTgrWavesEnabled[0]) {
-            // If only pulse is enabled, disable pulse and enable saw.
+            // If only pulse is enabled, disable pulse and enable saw
             if ((data >> 4) == 0x04) data ^= 0x60;
-            // If saw is enabled, disable pulse and tri.
+            // If saw is enabled, disable pulse and tri
             if (data & 0x20) data &= 0xaf;
-            // If tri and pulse are both enabled, disable pulse.
+            // If tri and pulse are both enabled, disable pulse
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
