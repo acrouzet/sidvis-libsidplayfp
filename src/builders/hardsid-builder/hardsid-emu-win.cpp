@@ -107,6 +107,11 @@ void HardSID::write(uint_least8_t addr, uint8_t data)
     hsid2.Write((BYTE) m_instance, (WORD) cycles, (BYTE) addr, (BYTE) data);
 }
 
+void HardSID::twflags(uint_least8_t addr, bool sawcon)
+{
+    twflags(addr, sawcon);
+}
+
 void HardSID::reset(uint8_t volume)
 {
     m_accessClk = 0;

@@ -91,6 +91,11 @@ void ReSID::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
+void ReSID::twflags(uint_least8_t addr, bool sawcon)
+{
+    twflags(addr, sawcon);
+}
+
 void ReSID::clock()
 {
     reSID::cycle_count cycles = eventScheduler->getTime(EVENT_CLOCK_PHI1) - m_accessClk;

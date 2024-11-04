@@ -98,6 +98,12 @@ void ReSIDfp::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
+void ReSIDfp::twflags(uint_least8_t addr, bool sawcon)
+{
+    clock();
+    m_sid.twflags(addr, sawcon);
+}
+
 void ReSIDfp::clock()
 {
     const event_clock_t cycles = eventScheduler->getTime(EVENT_CLOCK_PHI1) - m_accessClk;

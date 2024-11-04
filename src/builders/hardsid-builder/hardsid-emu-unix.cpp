@@ -177,6 +177,11 @@ void HardSID::write(uint_least8_t addr, uint8_t data)
     ::write(m_handle, &packet, sizeof(packet));
 }
 
+void HardSID::twflags(uint_least8_t addr, bool sawcon)
+{
+    twflags(addr, sawcon);
+}
+
 void HardSID::event()
 {
     event_clock_t cycles = eventScheduler->getTime(EVENT_CLOCK_PHI1) - m_accessClk;

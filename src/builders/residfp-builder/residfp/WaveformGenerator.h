@@ -153,6 +153,9 @@ private:
     bool msb_rising = false;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
+    
+    /// Drive the accumulator MSB low when a saw-combined wave is on (sawcon).
+    bool drive_msb_low = false;
 
 private:
     void shift_phase2(unsigned int waveform_old, unsigned int waveform_new);
@@ -228,6 +231,13 @@ public:
      * @param control control register value
      */
     void writeCONTROL_REG(unsigned char control);
+    
+    /**
+    * Triggerwave flags.
+    *
+    * @param sawcon Whether a saw-combined wave is on
+    */
+    void twflags(bool sawcon);
 
     /**
      * SID reset.
@@ -371,10 +381,7 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
 
         // In the 6581 the top bit of the accumulator may be driven low by combined waveforms
         // when the sawtooth is selected
-        if (is6581
-                && (waveform & 0x2)
-                && ((waveform_output & 0x800) == 0))
-            accumulator &= 0x7fffff;
+        if (is6581 && drive_msb_low) accumulator &= 0x7fffff;
 
         write_shift_register();
     }

@@ -75,15 +75,17 @@ protected:
 
     /// Flags for muted voices
     std::bitset<4> isMuted;
-	
+    
     std::bitset<4> isTgrWavesEnabled;
 
     std::string m_error;
 
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
+    
+    virtual void twflags(uint_least8_t addr, bool sawcon) = 0;
 
-    void writeReg(uint_least8_t addr, uint8_t data) override final;
+    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon) override final;
 
 public:
     sidemu(sidbuilder *builder) :
@@ -118,7 +120,7 @@ public:
      * @param mute true to mute channel
      */
     void voice(unsigned int voice, bool mute);
-	
+    
     /**
      * Enable/disable wave-switching on a voice for oscilloscope external trigger signals.
      */
