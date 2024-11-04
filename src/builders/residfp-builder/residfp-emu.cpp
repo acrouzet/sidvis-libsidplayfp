@@ -98,10 +98,10 @@ void ReSIDfp::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
-void ReSIDfp::twflags(uint_least8_t addr, bool sawcon)
+void ReSIDfp::twflags(uint_least8_t addr, bool sawcon, bool twon)
 {
     clock();
-    m_sid.twflags(addr, sawcon);
+    m_sid.twflags(addr, sawcon, twon);
 }
 
 void ReSIDfp::clock()

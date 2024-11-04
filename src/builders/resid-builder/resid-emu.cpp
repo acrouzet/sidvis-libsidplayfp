@@ -91,9 +91,9 @@ void ReSID::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
-void ReSID::twflags(uint_least8_t addr, bool sawcon)
+void ReSID::twflags(uint_least8_t addr, bool sawcon, bool twon)
 {
-    twflags(addr, sawcon);
+    twflags(addr, sawcon, twon);
 }
 
 void ReSID::clock()

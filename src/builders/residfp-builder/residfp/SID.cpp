@@ -474,20 +474,20 @@ void SID::write(int offset, unsigned char value)
     voiceSync(false);
 }
 
-void SID::twflags(int offset, bool sawcon)
+void SID::twflags(int offset, bool sawcon, bool twon)
 {
     switch (offset)
     {
     case 0x04:
-        voice[0].twflags(sawcon);
+        voice[0].twflags(sawcon, twon);
         break;
         
     case 0x0b:
-        voice[1].twflags(sawcon);
+        voice[1].twflags(sawcon, twon);
         break;
         
     case 0x12:  
-        voice[2].twflags(sawcon);
+        voice[2].twflags(sawcon, twon);	
         break;
 
     default:

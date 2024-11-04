@@ -109,9 +109,9 @@ public:
      *
      * @param sawcon Whether a saw-combined wave is on
      */
-    void twflags(bool sawcon)
+    void twflags(bool sawcon, bool twon)
     {
-        waveformGenerator.twflags(sawcon);
+        waveformGenerator.twflags(sawcon, twon);
     }   
 
     /**

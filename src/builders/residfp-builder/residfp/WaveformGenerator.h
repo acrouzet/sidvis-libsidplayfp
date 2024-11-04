@@ -236,8 +236,9 @@ public:
     * Triggerwave flags.
     *
     * @param sawcon Whether a saw-combined wave is on
+    * @param twon Whether triggerwaves are on
     */
-    void twflags(bool sawcon);
+    void twflags(bool sawcon, bool twon);
 
     /**
      * SID reset.

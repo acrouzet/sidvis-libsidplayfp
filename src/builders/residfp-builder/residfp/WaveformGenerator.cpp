@@ -434,7 +434,7 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     }
 }
 
-void WaveformGenerator::twflags(bool sawcon)
+void WaveformGenerator::twflags(bool sawcon, bool twon)
 {
     drive_msb_low = sawcon;
 }

@@ -29,7 +29,7 @@ const char sidemu::ERR_UNSUPPORTED_FREQ[] = "Unable to set desired output freque
 const char sidemu::ERR_INVALID_SAMPLING[] = "Invalid sampling method.";
 const char sidemu::ERR_INVALID_CHIP[]     = "Invalid chip model.";
 
-void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
+void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
 {
     switch (addr)
     {
@@ -40,6 +40,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
         // If saw is on, and tri or pulse is on, set the sawcon flag    
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
         if (isTgrWavesEnabled[0]) {
+			twon = true;
             // If only pulse is on, disable pulse and enable saw
             if ((data >> 4) == 0x04) data ^= 0x60;
             // If saw is on, disable pulse and tri
@@ -51,7 +52,8 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
     case 0x0b:
         if (isMuted[1]) data &= 0xfe;
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
-        if (isTgrWavesEnabled[1]) {     
+        if (isTgrWavesEnabled[1]) {
+			twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -61,6 +63,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
         if (isMuted[2]) data &= 0xfe;
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
         if (isTgrWavesEnabled[2]) {
+			twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -80,7 +83,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
 
     write(addr, data);
     
-    twflags(addr, sawcon);
+    twflags(addr, sawcon, twon);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)

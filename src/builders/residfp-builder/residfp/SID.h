@@ -107,7 +107,7 @@ private:
 
     /// Last written value
     unsigned char busValue;
-
+	
     /**
      * Emulated nonlinearity of the envelope DAC.
      *
@@ -221,8 +221,9 @@ public:
      *
      * @param offset The flag's corresponding chip register
      * @param sawcon Whether a saw-combined wave is on
+	 * @param twon Whether triggerwaves are on
      */
-    void twflags(int offset, bool sawcon);
+    void twflags(int offset, bool sawcon, bool twon);
 
     /**
      * Setting of SID sampling parameters.

@@ -83,9 +83,9 @@ protected:
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
     
-    virtual void twflags(uint_least8_t addr, bool sawcon) = 0;
+    virtual void twflags(uint_least8_t addr, bool sawcon, bool twon) = 0;
 
-    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon) override final;
+    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon) override final;
 
 public:
     sidemu(sidbuilder *builder) :
