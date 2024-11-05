@@ -434,9 +434,9 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     }
 }
 
-void WaveformGenerator::twflags(bool sawcon, bool twon)
+void WaveformGenerator::wavegenflags(bool sawcon, bool twsyncon)
 {
-    drive_msb_low = sawcon;
+    6581_drive_msb_low = sawcon;
 }
 
 void WaveformGenerator::waveBitfade()

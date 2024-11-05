@@ -107,11 +107,12 @@ public:
     /**
      * Triggerwave flags.
      *
-     * @param sawcon Whether a saw-combined wave is on
+     * @param sawcon Whether a saw-combined wave was written to the control register
+     * @param twsyncon Whether triggerwave sync modification is on
      */
-    void twflags(bool sawcon, bool twon)
+    void wavegenflags(bool sawcon, bool twsyncon)
     {
-        waveformGenerator.twflags(sawcon, twon);
+        waveformGenerator.wavegenflags(sawcon, twsyncon);
     }   
 
     /**

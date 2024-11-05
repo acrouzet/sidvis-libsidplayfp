@@ -217,13 +217,13 @@ public:
     
     
      /**
-     * Triggerwave flags.
+     * Waveform generator flags.
      *
      * @param offset The flag's corresponding chip register
-     * @param sawcon Whether a saw-combined wave is on
-	 * @param twon Whether triggerwaves are on
+     * @param sawcon Whether a saw-combined wave was written to the control register
+     * @param twsyncon Whether triggerwave sync modification is on
      */
-    void twflags(int offset, bool sawcon, bool twon);
+    void wavegenflags(int offset, bool sawcon, bool twsyncon);
 
     /**
      * Setting of SID sampling parameters.

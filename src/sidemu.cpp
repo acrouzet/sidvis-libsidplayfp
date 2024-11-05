@@ -29,31 +29,29 @@ const char sidemu::ERR_UNSUPPORTED_FREQ[] = "Unable to set desired output freque
 const char sidemu::ERR_INVALID_SAMPLING[] = "Invalid sampling method.";
 const char sidemu::ERR_INVALID_CHIP[]     = "Invalid chip model.";
 
-void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
+void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 {
     switch (addr)
     {
     case 0x04:
         // Ignore writes to gate bit to mute voices
         if (isMuted[0]) data &= 0xfe;
-        // Check and manipulate the control register
-        // If saw is on, and tri or pulse is on, set the sawcon flag    
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
+        // Check and manipulate writes to the control register
+        // If saw-combined wave, set the sawcon flag    
+        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;
         if (isTgrWavesEnabled[0]) {
-			twon = true;
-            // If only pulse is on, disable pulse and enable saw
+            // If pulse wave, disable pulse and enable saw
             if ((data >> 4) == 0x04) data ^= 0x60;
-            // If saw is on, disable pulse and tri
+            // If saw-combined wave, disable pulse and tri
             if (data & 0x20) data &= 0xaf;
-            // If tri and pulse are on, disable pulse
+            // If tri+pulse wave, disable pulse
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
     case 0x0b:
         if (isMuted[1]) data &= 0xfe;
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
+        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;      
         if (isTgrWavesEnabled[1]) {
-			twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -61,9 +59,8 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
         break;
     case 0x12:
         if (isMuted[2]) data &= 0xfe;
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
+        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;       
         if (isTgrWavesEnabled[2]) {
-			twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -83,7 +80,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
 
     write(addr, data);
     
-    twflags(addr, sawcon, twon);
+    wavegenflags(addr, sawcon, twsyncon);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)

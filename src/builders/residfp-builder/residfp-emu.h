@@ -54,8 +54,8 @@ public:
 
     uint8_t read(uint_least8_t addr) override;
     void write(uint_least8_t addr, uint8_t data) override;
-	
-    void twflags(uint_least8_t addr, bool sawcon, bool twon);
+    
+    void wavegenflags(uint_least8_t addr, bool sawcon, bool twsyncon);
 
     // c64sid functions
     void reset(uint8_t volume) override;

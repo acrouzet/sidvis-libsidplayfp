@@ -72,6 +72,9 @@ protected:
     bool isLocked = false;
 
     bool isFilterDisabled = false;
+	
+	bool sawcon = false;
+	bool twsyncon = false;
 
     /// Flags for muted voices
     std::bitset<4> isMuted;
@@ -83,9 +86,9 @@ protected:
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
     
-    virtual void twflags(uint_least8_t addr, bool sawcon, bool twon) = 0;
+    virtual void wavegenflags(uint_least8_t addr, bool sawcon, bool twsyncon) = 0;
 
-    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon) override final;
+    void writeReg(uint_least8_t addr, uint8_t data) override final;
 
 public:
     sidemu(sidbuilder *builder) :
