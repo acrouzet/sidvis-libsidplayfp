@@ -37,10 +37,10 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
         // Ignore writes to gate bit to mute voices
         if (isMuted[0]) data &= 0xfe;
         // Check and manipulate the control register
-        // If saw is on, and tri or pulse is on, set the sawcon flag    
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
+        // If a saw-combined wave is on, set the sawcon flag    
+        if ((data & 0x20) && ((data & 0xd0) != 0)) sawcon = true;
         if (isTgrWavesEnabled[0]) {
-			twon = true;
+            twon = true;
             // If only pulse is on, disable pulse and enable saw
             if ((data >> 4) == 0x04) data ^= 0x60;
             // If saw is on, disable pulse and tri
@@ -51,9 +51,9 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
         break;
     case 0x0b:
         if (isMuted[1]) data &= 0xfe;
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
+        if ((data & 0x20) && ((data & 0xd0) != 0)) sawcon = true;       
         if (isTgrWavesEnabled[1]) {
-			twon = true;
+            twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
@@ -61,9 +61,9 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon, bool twon)
         break;
     case 0x12:
         if (isMuted[2]) data &= 0xfe;
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;       
+        if ((data & 0x20) && ((data & 0xd0) != 0)) sawcon = true;       
         if (isTgrWavesEnabled[2]) {
-			twon = true;
+            twon = true;
             if ((data >> 4) == 0x04) data ^= 0x60;
             if (data & 0x20) data &= 0xaf;
             if ((data & 0x50) == 0x50) data &= 0xbf;
