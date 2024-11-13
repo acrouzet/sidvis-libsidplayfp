@@ -101,8 +101,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 
     write(addr, data);
 
-    tgrwaveson = isTgrWavesEnabled;
-    wavegenflags(addr, sawcon, tgrwaveson);
+    wavegenflags(addr, sawcon, isTgrWavesEnabled);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)

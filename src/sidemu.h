@@ -76,7 +76,6 @@ protected:
     bool isFilterDisabled = false;
     
     bool sawcon = false;
-    bool tgrwaveson = false;
 
     /// Flags for muted voices
     std::bitset<4> isMuted;
