@@ -95,7 +95,9 @@ private:
 
     /// Current chip model's bus value TTL
     int modelTTL;
-
+    
+    bool twsync_prep;
+    
     /// Time until #voiceSync must be run.
     unsigned int nextVoiceSync;
 
@@ -107,7 +109,7 @@ private:
 
     /// Last written value
     unsigned char busValue;
-	
+    
     /**
      * Emulated nonlinearity of the envelope DAC.
      *
@@ -215,15 +217,14 @@ public:
      */
     void write(int offset, unsigned char value);
     
-    
      /**
      * Waveform generator flags.
      *
      * @param offset The flag's corresponding chip register
      * @param sawcon Whether a saw-combined wave was written to the control register
-     * @param twsyncon Whether triggerwave sync modification is on
+     * @param tgrwaveson Whether triggerwaves are on
      */
-    void wavegenflags(int offset, bool sawcon, bool twsyncon);
+    void wavegenflags(int offset, bool sawcon, bool tgrwaveson);
 
     /**
      * Setting of SID sampling parameters.
@@ -378,6 +379,11 @@ int SID::clock(unsigned int cycles, short* buf)
                 voice[0].envelope()->clock();
                 voice[1].envelope()->clock();
                 voice[2].envelope()->clock();
+                
+                if (twsync_prep)
+                {
+                    voiceSync(true);
+                }
 
                 if (unlikely(resampler->input(output())))
                 {

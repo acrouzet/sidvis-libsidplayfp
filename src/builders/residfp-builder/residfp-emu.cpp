@@ -98,10 +98,10 @@ void ReSIDfp::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
-void ReSIDfp::wavegenflags(uint_least8_t addr, bool sawcon, bool twsyncon)
+void ReSIDfp::wavegenflags(uint_least8_t addr, bool sawcon, bool tgrwaveson)
 {
     clock();
-    m_sid.wavegenflags(addr, sawcon, twsyncon);
+    m_sid.wavegenflags(addr, sawcon, tgrwaveson);
 }
 
 void ReSIDfp::clock()

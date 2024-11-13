@@ -335,14 +335,65 @@ void WaveformGenerator::setPulldownModels(matrix_t* models)
     model_pulldown = models;
 }
 
-void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource) const
+void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource)
 {
-    // A special case occurs when a sync source is synced itself on the same
-    // cycle as when its MSB is set high. In this case the destination will
-    // not be synced. This has been verified by sampling OSC3.
-    if (unlikely(msb_rising) && syncDest->sync && !(sync && syncSource->msb_rising))
+    if (twsync_prep)
     {
-        syncDest->accumulator = 0;
+        // Do normal sync on reserves, reset MSB rising counter when synced.
+        if (!drive_msb_low_6581 && unlikely(reserve_msb_rising) && syncDest->sync && !(sync && syncSource->reserve_msb_rising))
+        {
+            syncDest->reserve_acc = 0;
+            syncDest->reserve_msb_rising_count = 0;
+        }
+        if (// Twsync on this voice:
+            sync && 
+            // Don't do twsync if sync is enabled on all 3 voices.
+            !(syncSource->sync && syncDest->sync) &&        
+            // Don't do twsync if source has noise or test on.
+            !syncSource->noise && !syncSource->test && 
+            // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
+            !syncSource->drive_msb_low_6581 &&
+            // Don't do twsync if source is being synced by at least double its frequency, ensuring its MSB won't rise.
+            !(syncSource->sync && ((syncDest->freq + 1) / syncSource->freq >= 2)) &&        
+            // Don't do twsync if source's freq is below ~20 Hz.
+            !(syncSource->freq < 0x0155)
+            )
+        {
+            twsync_here = true;
+            // Twsync: Make freq match source, and reset accumulator when a condition is met.
+            freq = syncSource->freq;
+            if (
+                // If sync is disabled on source, reset accumulator on source's MSB rising.
+                (!syncSource->sync && syncSource->msb_rising) ||
+                // If sync is enabled on source, reset accumulator on source's first reserve MSB rising after reset.
+                (syncSource->sync && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
+               )
+            {
+                accumulator = 0;
+            }
+        }
+        else // If twsync is not being done, match reserve.
+        {
+            twsync_here = false;
+            accumulator = reserve_acc;
+            freq = reserve_freq;
+        }
+    }
+    else // tw0 (normal) sync
+    {
+        if (
+            // Don't sync when the MSB is driven low by a saw-combined wave.
+            !drive_msb_low_6581 &&
+            // Sync when the MSB is rising and destination has sync on.
+            unlikely(msb_rising) && syncDest->sync && 
+            // A special case occurs when a sync source is synced itself on the same
+            // cycle as when its MSB is set high. In this case the destination will
+            // not be synced. This has been verified by sampling OSC3.
+            !(sync && syncSource->msb_rising)
+           )
+        {
+            syncDest->accumulator = 0;
+        }
     }
 }
 
@@ -357,9 +408,10 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     const bool test_prev = test;
 
     waveform = (control >> 4) & 0x0f;
+    noise = (control & 0x80) != 0;
     test = (control & 0x08) != 0;
     sync = (control & 0x02) != 0;
-
+    
     // Substitution of accumulator MSB when sawtooth = 0, ring_mod = 1.
     ring_msb_mask = ((~control >> 5) & (control >> 2) & 0x1) << 23;
 
@@ -412,6 +464,12 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
         {
             // Reset accumulator.
             accumulator = 0;
+            
+            if (twsync_prep) 
+            {
+                reserve_acc = 0;
+                reserve_msb_rising_count = 0;
+            }
 
             // Flush shift pipeline.
             shift_pipeline = 0;
@@ -434,11 +492,6 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     }
 }
 
-void WaveformGenerator::wavegenflags(bool sawcon, bool twsyncon)
-{
-    6581_drive_msb_low = sawcon;
-}
-
 void WaveformGenerator::waveBitfade()
 {
     waveform_output &= waveform_output >> 1;
@@ -459,9 +512,12 @@ void WaveformGenerator::reset()
 {
     // accumulator is not changed on reset
     freq = 0;
+    if (twsync_prep) reserve_freq = 0;
+    
     pw = 0;
 
     msb_rising = false;
+    if (twsync_prep) reserve_msb_rising = false;
 
     waveform = 0;
     osc3 = 0;

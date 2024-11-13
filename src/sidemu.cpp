@@ -33,43 +33,64 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 {
     switch (addr)
     {
+
+    case 0x02:
+        if (isTgrWavesEnabled) data = 0;
+    case 0x03:
+        if (isTgrWavesEnabled) data = 0x08;
     case 0x04:
         // Ignore writes to gate bit to mute voices
         if (isMuted[0]) data &= 0xfe;
         // Check and manipulate writes to the control register
         // If saw-combined wave, set the sawcon flag    
-        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;
-        if (isTgrWavesEnabled[0]) {
+        sawcon = ((data & 0x20) && (data >= 0x30));
+        if (isTgrWavesEnabled) {
             // If pulse wave, disable pulse and enable saw
-            if ((data >> 4) == 0x04) data ^= 0x60;
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            // If tri+pulse wave with no ringmod, disable pulse
+            if ((data & 0xf4) == 0x50) data &= 0xbf;
             // If saw-combined wave, disable pulse and tri
             if (data & 0x20) data &= 0xaf;
-            // If tri+pulse wave, disable pulse
-            if ((data & 0x50) == 0x50) data &= 0xbf;
+            // If non-noise wave with sync, set wave to saw
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
+
+    case 0x09:
+        if (isTgrWavesEnabled) data = 0;
+    case 0x0a:
+        if (isTgrWavesEnabled) data = 0x08;
     case 0x0b:
-        if (isMuted[1]) data &= 0xfe;
-        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;      
-        if (isTgrWavesEnabled[1]) {
-            if ((data >> 4) == 0x04) data ^= 0x60;
+        if (isMuted[1]) data &= 0xfe; 
+        sawcon = ((data & 0x20) && (data >= 0x30));
+        if (isTgrWavesEnabled) {
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
-            if ((data & 0x50) == 0x50) data &= 0xbf;
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
+
+    case 0x10:
+        if (isTgrWavesEnabled) data = 0;
+    case 0x11:
+        if (isTgrWavesEnabled) data = 0x08;
     case 0x12:
-        if (isMuted[2]) data &= 0xfe;
-        sawcon = ((data & 0x20) && (data >= 0x30)) ? true : false;       
-        if (isTgrWavesEnabled[2]) {
-            if ((data >> 4) == 0x04) data ^= 0x60;
+        if (isMuted[2]) data &= 0xfe; 
+        sawcon = ((data & 0x20) && (data >= 0x30));
+        if (isTgrWavesEnabled) {
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
-            if ((data & 0x50) == 0x50) data &= 0xbf;
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
+
     case 0x17:
         // Ignore writes to filter register to disable filter
         if (isFilterDisabled) data &= 0xf0;
         break;
+
     case 0x18:
         // Ignore writes to volume register to mute samples
         // Works only for volume-based digis
@@ -79,8 +100,9 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     }
 
     write(addr, data);
-    
-    wavegenflags(addr, sawcon, twsyncon);
+
+    tgrwaveson = isTgrWavesEnabled;
+    wavegenflags(addr, sawcon, tgrwaveson);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
@@ -89,10 +111,9 @@ void sidemu::voice(unsigned int voice, bool mute)
         isMuted[voice] = mute;
 }
 
-void sidemu::tgrwaves(unsigned int voice, bool enable)
+void sidemu::tgrwaves(bool enable)
 {
-    if (voice < 3)
-        isTgrWavesEnabled[voice] = enable;
+    isTgrWavesEnabled = enable;
 }
 
 void sidemu::filter(bool enable)

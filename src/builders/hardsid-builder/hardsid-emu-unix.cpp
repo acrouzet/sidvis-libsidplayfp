@@ -177,9 +177,9 @@ void HardSID::write(uint_least8_t addr, uint8_t data)
     ::write(m_handle, &packet, sizeof(packet));
 }
 
-void HardSID::wavegenflags(uint_least8_t addr, bool sawcon, bool twsyncon)
+void HardSID::wavegenflags(uint_least8_t addr, bool sawcon, bool tgrwaveson)
 {
-    wavegenflags(addr, sawcon, twsyncon);
+    wavegenflags(addr, sawcon, tgrwaveson);
 }
 
 void HardSID::event()
