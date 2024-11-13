@@ -333,7 +333,8 @@ void WaveformGenerator::clock()
     {
         // Calculate new accumulator value;
         const unsigned int accumulator_old = accumulator;
-        accumulator = (accumulator + freq) & 0xffffff;
+        // If twsync is on, hold accumulator if max is reached.
+        accumulator = (twsync_here && (accumulator + freq > 0xffffff)) ? 0xffffff : (accumulator + freq) & 0xffffff;
 
         // Check which bit have changed from low to high
         const unsigned int accumulator_bits_set = ~accumulator_old & accumulator;
@@ -344,7 +345,7 @@ void WaveformGenerator::clock()
         if (twsync_prep)
         {
             const unsigned int reserve_acc_old = reserve_acc;
-            reserve_acc = (reserve_acc + reserve_freq > 0xffffff) ? 0xffffff : (reserve_acc + reserve_freq) & 0xffffff;
+            reserve_acc = (reserve_acc + reserve_freq) & 0xffffff;
             
             const unsigned int reserve_acc_bits_set = ~reserve_acc_old & reserve_acc;
             

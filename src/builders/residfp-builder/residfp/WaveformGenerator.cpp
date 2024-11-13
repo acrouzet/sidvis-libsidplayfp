@@ -359,7 +359,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             !(syncSource->sync && ((syncDest->freq + 1) / syncSource->freq >= 2)) &&        
             // Don't do twsync if source's freq is below ~20 Hz.
             !(syncSource->freq < 0x0155)
-            )
+           )
         {
             twsync_here = true;
             // Twsync: Make freq match source, and reset accumulator when a condition is met.
