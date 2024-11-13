@@ -125,6 +125,8 @@ private:
     /// Current accumulator value.
     unsigned int accumulator = 0x555555; // Accumulator's even bits are high on powerup
     unsigned int reserve_acc = 0x555555;
+    
+    unsigned int reserve_msb_rising_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
@@ -147,7 +149,6 @@ private:
 
     /// The control register bits. Gate is handled by EnvelopeGenerator.
     //@{
-    bool noise = false;
     bool test = false;
     bool sync = false;
     //@}
@@ -158,8 +159,6 @@ private:
     /// Tell whether the accumulator MSB was set high on this cycle.
     bool msb_rising = false;
     bool reserve_msb_rising = false;
-    
-    bool reserve_msb_rising_count = 0;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
     

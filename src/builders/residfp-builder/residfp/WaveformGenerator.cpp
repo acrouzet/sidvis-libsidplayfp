@@ -349,14 +349,12 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             sync && 
             // Don't do twsync if sync is enabled on all 3 voices.
             !(syncSource->sync && syncDest->sync) &&
-			// Don't do twsync if noise is on.
-			!noise &&
             // Don't do twsync if source has test on.
             !syncSource->test &&
             // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
             !syncSource->drive_msb_low_6581 &&
-            // Don't do twsync if source is being synced by at least double its frequency, ensuring its MSB won't rise.
-            !(syncSource->sync && ((syncDest->freq + 1) / syncSource->freq >= 2)) &&        
+            // Don't do twsync if source reserve is being synced by at least double its frequency, ensuring its MSB won't rise.
+            !(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2)) &&        
             // Don't do twsync if source's freq is below ~20 Hz.
             !(syncSource->freq < 0x0155)
            )
@@ -365,10 +363,10 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             // Twsync: Make freq match source, and reset accumulator when a condition is met.
             freq = syncSource->freq;
             if (
-                // If sync is disabled on source, reset accumulator on source's MSB rising.
-                (!syncSource->sync && syncSource->msb_rising) ||
-                // If sync is enabled on source, reset accumulator on source's first reserve MSB rising after reset.
-                (syncSource->sync && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
+                // If twsync is disabled on source, reset accumulator on source's MSB rising.
+                (!syncSource->twsync_here && syncSource->msb_rising) ||
+                // If twsync is enabled on source, reset accumulator on source reserve's first MSB rising after reset.
+                (syncSource->twsync_here && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
                )
             {
                 accumulator = 0;
@@ -410,7 +408,6 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     const bool test_prev = test;
 
     waveform = (control >> 4) & 0x0f;
-    noise = (control & 0x80) != 0;
     test = (control & 0x08) != 0;
     sync = (control & 0x02) != 0;
     
