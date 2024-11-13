@@ -348,9 +348,11 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
         if (// Twsync on this voice:
             sync && 
             // Don't do twsync if sync is enabled on all 3 voices.
-            !(syncSource->sync && syncDest->sync) &&        
-            // Don't do twsync if source has noise or test on.
-            !syncSource->noise && !syncSource->test && 
+            !(syncSource->sync && syncDest->sync) &&
+			// Don't do twsync if noise is on.
+			!noise &&
+            // Don't do twsync if source has test on.
+            !syncSource->test &&
             // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
             !syncSource->drive_msb_low_6581 &&
             // Don't do twsync if source is being synced by at least double its frequency, ensuring its MSB won't rise.
