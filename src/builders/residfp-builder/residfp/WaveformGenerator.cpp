@@ -339,58 +339,67 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
 {
     if (twsync_prep)
     {
+		
         // Do normal sync on reserves, reset MSB rising counter when synced.
         if (!drive_msb_low_6581 && unlikely(reserve_msb_rising) && syncDest->sync && !(sync && syncSource->reserve_msb_rising))
         {
             syncDest->reserve_acc = 0;
             syncDest->reserve_msb_rising_count = 0;
         }
-        if (// Twsync on this voice:
-            sync && 
-            // Don't do twsync if sync is enabled on all 3 voices.
-            !(syncSource->sync && syncDest->sync) &&
-            // Don't do twsync if source has test on.
-            !syncSource->test &&
-            // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
-            !syncSource->drive_msb_low_6581 &&
-            // Don't do twsync if source reserve is being synced by at least double its frequency, ensuring its MSB won't rise.
-            !(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2)) &&        
-            // Don't do twsync if source's freq is below ~20 Hz.
-            !(syncSource->freq < 0x0155)
-           )
-        {
-            twsync_here = true;
-            // Twsync: Make freq match source, and reset accumulator when a condition is met.
-            freq = syncSource->freq;
-            if (
-                // If twsync is disabled on source, reset accumulator on source's MSB rising.
-                (!syncSource->twsync_here && syncSource->msb_rising) ||
-                // If twsync is enabled on source, reset accumulator on source reserve's first MSB rising after reset.
-                (syncSource->twsync_here && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
-               )
-            {
-                accumulator = 0;
-            }
+		
+        twsync_cond_prenoise =
+		(
+			sync && 
+			// Don't do twsync if sync is enabled on all 3 voices.
+			!(syncSource->sync && syncDest->sync) &&
+			// Don't do twsync if source has test on.
+			!syncSource->test &&
+			// Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
+			!syncSource->drive_msb_low_6581 &&
+			// Don't do twsync if source reserve is being synced by at least double its frequency, ensuring its MSB won't rise.
+			!(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2)) &&        
+			// Don't do twsync if source's freq is below ~20 Hz.
+			!(syncSource->freq < 0x0155)
+		);
+		// Don't do twsync if noise is on.
+		if (twsync_cond_prenoise && !noise)
+		{
+			// Twsync: Make freq match source, and reset accumulator when a condition is met.
+			twsync_here = true;
+			// Because noise doesn't do twsync (thus doesn't match its freq to source).
+			freq = (syncSource->twsync_cond_prenoise && syncSource->noise) ? syncDest->freq : syncSource->freq;
+			if 
+			(
+				// If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's MSB rising.
+				(!syncSource->twsync_cond_prenoise && syncSource->msb_rising) ||
+				// If source reserve accumulator is being synced to a noticeable degree, reset accumulator on source reserve's first MSB rising after reset.
+				(syncSource->twsync_cond_prenoise && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
+			)
+			{
+				accumulator = 0;
+			}
         }
-        else // If twsync is not being done, match reserve.
+        else // If twsync isn't being done, match reserve.
         {
             twsync_here = false;
             accumulator = reserve_acc;
             freq = reserve_freq;
         }
+		
     }
     else // tw0 (normal) sync
     {
-        if (
-            // Don't sync when the MSB is driven low by a saw-combined wave.
-            !drive_msb_low_6581 &&
-            // Sync when the MSB is rising and destination has sync on.
-            unlikely(msb_rising) && syncDest->sync && 
-            // A special case occurs when a sync source is synced itself on the same
-            // cycle as when its MSB is set high. In this case the destination will
-            // not be synced. This has been verified by sampling OSC3.
-            !(sync && syncSource->msb_rising)
-           )
+        if 
+		(
+			// Don't sync when the MSB is driven low by a saw-combined wave.
+			!drive_msb_low_6581 &&
+			// Sync when the MSB is rising and destination has sync on.
+			unlikely(msb_rising) && syncDest->sync && 
+			// A special case occurs when a sync source is synced itself on the same
+			// cycle as when its MSB is set high. In this case the destination will
+			// not be synced. This has been verified by sampling OSC3.
+			!(sync && syncSource->msb_rising)
+		)
         {
             syncDest->accumulator = 0;
         }
@@ -410,6 +419,7 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     waveform = (control >> 4) & 0x0f;
     test = (control & 0x08) != 0;
     sync = (control & 0x02) != 0;
+	noise = (control & 0x80) != 0;
     
     // Substitution of accumulator MSB when sawtooth = 0, ring_mod = 1.
     ring_msb_mask = ((~control >> 5) & (control >> 2) & 0x1) << 23;
@@ -523,6 +533,7 @@ void WaveformGenerator::reset()
 
     test = false;
     sync = false;
+	noise = false;
 
     wave = model_wave ? (*model_wave)[0] : nullptr;
     pulldown = nullptr;

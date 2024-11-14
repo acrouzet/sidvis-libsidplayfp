@@ -38,7 +38,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         if (isTgrWavesEnabled) data = 0;
     case 0x03:
         if (isTgrWavesEnabled) data = 0x08;
-    // Check and manipulate writes to the control register
+	// Check and manipulate writes to the control register
     case 0x04:
         // Ignore writes to gate bit to mute voices
         if (isMuted[0]) data &= 0xfe;
@@ -51,8 +51,8 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
             if ((data & 0xf4) == 0x50) data &= 0xbf;
             // If saw-combined wave, disable pulse and tri
             if (data & 0x20) data &= 0xaf;
-            // If sync, set wave to saw
-            if (data & 0x02) data = (data & 0x0f) | 0x20;
+            // If non-noise wave with sync, set wave to saw
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
 
@@ -67,7 +67,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
-            if (data & 0x02) data = (data & 0x0f) | 0x20;
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
 
@@ -82,7 +82,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
-            if (data & 0x02) data = (data & 0x0f) | 0x20;
+            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
         }
         break;
 
