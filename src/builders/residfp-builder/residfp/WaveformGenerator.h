@@ -151,7 +151,7 @@ private:
     //@{
     bool test = false;
     bool sync = false;
-	bool noise = false;
+    bool noise = false;
     //@}
 
     /// Test bit is latched at phi2 for the noise XOR.
@@ -164,8 +164,8 @@ private:
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
     
     bool twsync_cond_prenoise = false;
-	
-	bool twsync_here = false;
+    
+    bool twsync_here = false;
 
 private:
     void shift_phase2(unsigned int waveform_old, unsigned int waveform_new);
