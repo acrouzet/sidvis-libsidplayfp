@@ -107,9 +107,9 @@ void HardSID::write(uint_least8_t addr, uint8_t data)
     hsid2.Write((BYTE) m_instance, (WORD) cycles, (BYTE) addr, (BYTE) data);
 }
 
-void HardSID::wavegenflags(uint_least8_t addr, bool sawcon, bool tgrwaveson)
+void HardSID::twdata(uint_least8_t addr, bool triggerwaves, uint8_t tw0_control)
 {
-    wavegenflags(addr, sawcon, tgrwaveson);
+    twdata(addr, triggerwaves, tw0_control);
 }
 
 void HardSID::reset(uint8_t volume)

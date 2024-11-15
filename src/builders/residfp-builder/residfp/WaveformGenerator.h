@@ -124,13 +124,13 @@ private:
 
     /// Current accumulator value.
     unsigned int accumulator = 0x555555; // Accumulator's even bits are high on powerup
-    unsigned int reserve_acc = 0x555555;
+    unsigned int tw0_accumulator = 0x555555;
     
-    unsigned int reserve_msb_rising_count = 0;
+    unsigned int tw0_msb_rising_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
-    unsigned int reserve_freq = 0;
+    unsigned int tw0_freq = 0;
 
     /// 8580 tri/saw pipeline
     unsigned int tri_saw_pipeline = 0x555;
@@ -144,8 +144,9 @@ private:
     // The wave signal TTL when no waveform is selected.
     unsigned int floating_output_ttl = 0;
 
-    bool drive_msb_low_6581 = false;
     bool twsync_prep;
+
+    bool drive_msb_low_6581 = false;
 
     /// The control register bits. Gate is handled by EnvelopeGenerator.
     //@{
@@ -159,7 +160,7 @@ private:
 
     /// Tell whether the accumulator MSB was set high on this cycle.
     bool msb_rising = false;
-    bool reserve_msb_rising = false;
+    bool tw0_msb_rising = false;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
     
@@ -215,7 +216,7 @@ public:
     void writeFREQ_LO(unsigned char freq_lo) 
     {
         freq = (freq & 0xff00) | (freq_lo & 0xff);
-        if (twsync_prep) reserve_freq = (reserve_freq & 0xff00) | (freq_lo & 0xff);
+        if (twsync_prep) tw0_freq = (tw0_freq & 0xff00) | (freq_lo & 0xff);
     }
 
     /**
@@ -226,7 +227,7 @@ public:
     void writeFREQ_HI(unsigned char freq_hi) 
     { 
         freq = (freq_hi << 8 & 0xff00) | (freq & 0xff);
-        if (twsync_prep) reserve_freq = (freq_hi << 8 & 0xff00) | (reserve_freq & 0xff);        
+        if (twsync_prep) tw0_freq = (freq_hi << 8 & 0xff00) | (tw0_freq & 0xff);        
     }
 
     /**
@@ -251,15 +252,15 @@ public:
     void writeCONTROL_REG(unsigned char control);
     
     /**
-    * Triggerwave flags.
-    *
-    * @param sawcon Whether a saw-combined wave was written to the control register
-    * @param twsyncon Whether triggerwaves are on
-    */
-    void wavegenflags(bool sawcon, bool tgrwaveson)
+     * Triggerwave data.
+     *
+     * @param triggerwaves Whether triggerwaves are enabled
+     * @param tw0_control Control register value when triggerwaves are disabled
+     */
+    void twdata(bool triggerwaves, unsigned char tw0_control)
     {
-        drive_msb_low_6581 = sawcon;
-        twsync_prep = tgrwaveson;
+        twsync_prep = triggerwaves;
+        drive_msb_low_6581 = (tw0_control & 0x20) && (tw0_control >= 0x30);
     }
 
     /**
@@ -346,13 +347,13 @@ void WaveformGenerator::clock()
         
         if (twsync_prep)
         {
-            const unsigned int reserve_acc_old = reserve_acc;
-            reserve_acc = (reserve_acc + reserve_freq) & 0xffffff;
+            const unsigned int tw0_accumulator_old = tw0_accumulator;
+            tw0_accumulator = (tw0_accumulator + tw0_freq) & 0xffffff;
             
-            const unsigned int reserve_acc_bits_set = ~reserve_acc_old & reserve_acc;
+            const unsigned int tw0_accumulator_bits_set = ~tw0_accumulator_old & tw0_accumulator;
             
-            reserve_msb_rising = (reserve_acc_bits_set & 0x800000) != 0;
-            if (reserve_msb_rising) reserve_msb_rising_count += 1;
+            tw0_msb_rising = (tw0_accumulator_bits_set & 0x800000) != 0;
+            if (tw0_msb_rising) tw0_msb_rising_count += 1;
         }
 
         // Shift noise register once for each time accumulator bit 19 is set high.
@@ -417,7 +418,7 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
         if (is6581 && drive_msb_low_6581) 
         {
             if (!twsync_here) accumulator &= 0x7fffff;
-            if (twsync_prep) reserve_acc &= 0x7fffff;
+            if (twsync_prep) tw0_accumulator &= 0x7fffff;
         }
 
         write_shift_register();

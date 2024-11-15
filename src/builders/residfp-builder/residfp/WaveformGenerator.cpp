@@ -340,11 +340,11 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
     if (twsync_prep)
     {
         
-        // Do normal sync on reserves, reset MSB rising counter when synced.
-        if (!drive_msb_low_6581 && unlikely(reserve_msb_rising) && syncDest->sync && !(sync && syncSource->reserve_msb_rising))
+        // Do normal sync on tw0s, reset MSB rising counter when synced.
+        if (!drive_msb_low_6581 && unlikely(tw0_msb_rising) && syncDest->sync && !(sync && syncSource->tw0_msb_rising))
         {
-            syncDest->reserve_acc = 0;
-            syncDest->reserve_msb_rising_count = 0;
+            syncDest->tw0_accumulator = 0;
+            syncDest->tw0_msb_rising_count = 0;
         }
         twsync_cond_prenoise =
         (
@@ -353,12 +353,12 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             !(syncSource->sync && syncDest->sync) &&
             // Don't do twsync if source has test on.
             !syncSource->test &&
-            // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
+            // Don't do twsync if source's tw0 MSB is driven low by a saw-combined wave.
             !syncSource->drive_msb_low_6581 &&
-            // Don't do twsync if source's (reserve) freq is below ~20 Hz.
-            !(syncSource->reserve_freq < 0x0155) &&
-            // Don't do twsync if source reserve is being synced by at least double its frequency, ensuring its MSB won't rise.
-            !(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2))
+            // Don't do twsync if source's (tw0) freq is below ~20 Hz.
+            !(syncSource->tw0_freq < 0x0155) &&
+            // Don't do twsync if source tw0 is being synced by at least double its frequency, ensuring its MSB won't rise.
+            !(syncSource->sync && ((syncDest->tw0_freq + 1) / syncSource->tw0_freq >= 2))
         );
         // Don't do twsync if noise is on.
         if (twsync_cond_prenoise && !noise)
@@ -371,18 +371,18 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             (
                 // If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's MSB rising.
                 (!syncSource->twsync_cond_prenoise && syncSource->msb_rising) ||
-                // If source reserve accumulator is being synced to a noticeable degree, reset accumulator on source reserve's first MSB rising after reset.
-                (syncSource->twsync_cond_prenoise && syncSource->reserve_msb_rising && (syncSource->reserve_msb_rising_count == 1))
+                // If source tw0 accumulator is being synced to a noticeable degree, reset accumulator on source tw0's first MSB rising after reset.
+                (syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising && (syncSource->tw0_msb_rising_count == 1))
             )
             {
                 accumulator = 0;
             }
         }
-        else // If twsync isn't being done, match reserve.
+        else // If twsync isn't being done, match tw0.
         {
             twsync_here = false;
-            accumulator = reserve_acc;
-            freq = reserve_freq;
+            accumulator = tw0_accumulator;
+            freq = tw0_freq;
         }
         
     }
@@ -475,8 +475,8 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
             
             if (twsync_prep) 
             {
-                reserve_acc = 0;
-                reserve_msb_rising_count = 0;
+                tw0_accumulator = 0;
+                tw0_msb_rising_count = 0;
             }
 
             // Flush shift pipeline.
@@ -520,12 +520,12 @@ void WaveformGenerator::reset()
 {
     // accumulator is not changed on reset
     freq = 0;
-    if (twsync_prep) reserve_freq = 0;
+    if (twsync_prep) tw0_freq = 0;
     
     pw = 0;
 
     msb_rising = false;
-    if (twsync_prep) reserve_msb_rising = false;
+    if (twsync_prep) tw0_msb_rising = false;
 
     waveform = 0;
     osc3 = 0;

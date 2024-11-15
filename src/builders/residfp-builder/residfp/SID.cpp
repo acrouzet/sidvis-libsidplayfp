@@ -474,22 +474,22 @@ void SID::write(int offset, unsigned char value)
     voiceSync(false);
 }
 
-void SID::wavegenflags(int offset, bool sawcon, bool tgrwaveson)
+void SID::twdata(int offset, bool triggerwaves, unsigned char tw0ctrl)
 {
-    twsync_prep = tgrwaveson;
+    twsync_prep = triggerwaves;
     
     switch (offset)
     {
     case 0x04:
-        voice[0].wavegenflags(sawcon, tgrwaveson);
+        voice[0].twdata(triggerwaves, tw0ctrl);
         break;
         
     case 0x0b:
-        voice[1].wavegenflags(sawcon, tgrwaveson);
+        voice[1].twdata(triggerwaves, tw0ctrl);
         break;
         
     case 0x12:  
-        voice[2].wavegenflags(sawcon, tgrwaveson);    
+        voice[2].twdata(triggerwaves, tw0ctrl);    
         break;
 
     default:

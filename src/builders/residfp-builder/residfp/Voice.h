@@ -105,14 +105,14 @@ public:
     }
     
     /**
-     * Triggerwave flags.
+     * Triggerwave data.
      *
-     * @param sawcon Whether a saw-combined wave was written to the control register before modification
-     * @param tgrwaveson Whether triggerwaves are on
+     * @param triggerwaves Whether triggerwaves are enabled
+     * @param tw0_control Control register value when triggerwaves are disabled
      */
-    void wavegenflags(bool sawcon, bool tgrwaveson)
+    void twdata(bool triggerwaves, unsigned char tw0_control)
     {
-        waveformGenerator.wavegenflags(sawcon, tgrwaveson);
+        waveformGenerator.twdata(triggerwaves, tw0_control);
     }   
 
     /**

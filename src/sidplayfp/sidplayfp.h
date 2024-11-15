@@ -147,7 +147,7 @@ public:
     * @param sidNum the SID chip, 0 for the first one, 1 for the second or 2 for the third.
     * @param enable true enable triggerwaves, false disable them.
     */
-    void tgrwaves(unsigned int sidNum, bool enable);
+    void triggerwaves(unsigned int sidNum, bool enable);
 
     /**
      * Enable/disable SID filter.

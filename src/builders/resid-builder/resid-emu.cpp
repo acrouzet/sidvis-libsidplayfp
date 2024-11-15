@@ -91,9 +91,9 @@ void ReSID::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
-void ReSID::wavegenflags(uint_least8_t addr, bool sawcon, bool tgrwaveson)
+void ReSID::twdata(uint_least8_t addr, bool triggerwaves, uint8_t tw0_control)
 {
-    wavegenflags(addr, sawcon, tgrwaveson);
+    twdata(addr, triggerwaves, tw0_control);
 }
 
 void ReSID::clock()

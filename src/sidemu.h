@@ -67,15 +67,15 @@ protected:
 
     /// Current position in buffer
     int m_bufferpos = 0;
+    
+    uint8_t tw0_control = 0;
 
     bool m_status = true;
     bool isLocked = false;
 
-    bool isTgrWavesEnabled = false;
+    bool isTWEnabled = false;
     
     bool isFilterDisabled = false;
-    
-    bool sawcon = false;
 
     /// Flags for muted voices
     std::bitset<4> isMuted;
@@ -85,7 +85,7 @@ protected:
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
     
-    virtual void wavegenflags(uint_least8_t addr, bool sawcon, bool tgrwaveson) = 0;
+    virtual void twdata(uint_least8_t addr, bool triggerwaves, uint8_t tw0_control) = 0;
 
     void writeReg(uint_least8_t addr, uint8_t data) override final;
 
@@ -126,7 +126,7 @@ public:
     /**
      * Enable/disable wave-switching on a voice for oscilloscope external trigger signals.
      */
-    void tgrwaves(bool enable);
+    void triggerwaves(bool enable);
 
     /**
      * Enable/disable filter.

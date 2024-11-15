@@ -36,10 +36,9 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     // Check and manipulate writes to the control register
     case 0x04:
         // Ignore writes to gate bit to mute voices
-        if (isMuted[0]) data &= 0xfe;
-        // If saw-combined wave, set the sawcon flag    
-        sawcon = ((data & 0x20) && (data >= 0x30));
-        if (isTgrWavesEnabled) {
+        if (isMuted[0]) data &= 0xfe;  
+        tw0_control = data;
+        if (isTWEnabled) {
             // If pulse wave, disable pulse and enable saw
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             // If tri+pulse wave with no ringmod, disable pulse
@@ -53,8 +52,8 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 
     case 0x0b:
         if (isMuted[1]) data &= 0xfe; 
-        sawcon = ((data & 0x20) && (data >= 0x30));
-        if (isTgrWavesEnabled) {
+        tw0_control = data;     
+        if (isTWEnabled) {
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
@@ -63,9 +62,9 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         break;
 
     case 0x12:
-        if (isMuted[2]) data &= 0xfe; 
-        sawcon = ((data & 0x20) && (data >= 0x30));
-        if (isTgrWavesEnabled) {
+        if (isMuted[2]) data &= 0xfe;
+        tw0_control = data;     
+        if (isTWEnabled) {
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0xf4) == 0x50) data &= 0xbf;
             if (data & 0x20) data &= 0xaf;
@@ -88,7 +87,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 
     write(addr, data);
 
-    wavegenflags(addr, sawcon, isTgrWavesEnabled);
+    twdata(addr, isTWEnabled, tw0_control);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
@@ -97,9 +96,9 @@ void sidemu::voice(unsigned int voice, bool mute)
         isMuted[voice] = mute;
 }
 
-void sidemu::tgrwaves(bool enable)
+void sidemu::triggerwaves(bool enable)
 {
-    isTgrWavesEnabled = enable;
+    isTWEnabled = enable;
 }
 
 void sidemu::filter(bool enable)

@@ -218,13 +218,13 @@ public:
     void write(int offset, unsigned char value);
     
      /**
-     * Waveform generator flags.
+     * Triggerwave data.
      *
-     * @param offset The flag's corresponding chip register
-     * @param sawcon Whether a saw-combined wave was written to the control register
-     * @param tgrwaveson Whether triggerwaves are on
+     * @param offset The data's corresponding chip register
+     * @param triggerwaves Whether triggerwaves are enabled
+     * @param tw0_control Control register value when triggerwaves are disabled
      */
-    void wavegenflags(int offset, bool sawcon, bool tgrwaveson);
+    void twdata(int offset, bool triggerwaves, unsigned char tw0_control);
 
     /**
      * Setting of SID sampling parameters.
