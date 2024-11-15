@@ -346,7 +346,6 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             syncDest->reserve_acc = 0;
             syncDest->reserve_msb_rising_count = 0;
         }
-        
         twsync_cond_prenoise =
         (
             sync && 
@@ -356,10 +355,10 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             !syncSource->test &&
             // Don't do twsync if source's reserve MSB is driven low by a saw-combined wave.
             !syncSource->drive_msb_low_6581 &&
+            // Don't do twsync if source's (reserve) freq is below ~20 Hz.
+            !(syncSource->reserve_freq < 0x0155) &&
             // Don't do twsync if source reserve is being synced by at least double its frequency, ensuring its MSB won't rise.
-            !(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2)) &&        
-            // Don't do twsync if source's freq is below ~20 Hz.
-            !(syncSource->freq < 0x0155)
+            !(syncSource->sync && ((syncDest->reserve_freq + 1) / syncSource->reserve_freq >= 2))
         );
         // Don't do twsync if noise is on.
         if (twsync_cond_prenoise && !noise)
