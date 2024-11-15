@@ -474,20 +474,22 @@ void SID::write(int offset, unsigned char value)
     voiceSync(false);
 }
 
-void SID::wavegenflags(int offset, bool sawcon, bool twsyncon)
+void SID::wavegenflags(int offset, bool sawcon, bool tgrwaveson)
 {
+    twsync_prep = tgrwaveson;
+    
     switch (offset)
     {
     case 0x04:
-        voice[0].wavegenflags(sawcon, twsyncon);
+        voice[0].wavegenflags(sawcon, tgrwaveson);
         break;
         
     case 0x0b:
-        voice[1].wavegenflags(sawcon, twsyncon);
+        voice[1].wavegenflags(sawcon, tgrwaveson);
         break;
         
     case 0x12:  
-        voice[2].wavegenflags(sawcon, twsyncon);    
+        voice[2].wavegenflags(sawcon, tgrwaveson);    
         break;
 
     default:
@@ -537,6 +539,11 @@ void SID::clockSilent(unsigned int cycles)
 
                 // clock ENV3 only
                 voice[2].envelope()->clock();
+                
+                if (twsync_prep)
+                {
+                    voiceSync(true);
+                }
             }
 
             cycles -= delta_t;

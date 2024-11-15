@@ -124,9 +124,13 @@ private:
 
     /// Current accumulator value.
     unsigned int accumulator = 0x555555; // Accumulator's even bits are high on powerup
+    unsigned int reserve_acc = 0x555555;
+    
+    unsigned int reserve_msb_rising_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
+    unsigned int reserve_freq = 0;
 
     /// 8580 tri/saw pipeline
     unsigned int tri_saw_pipeline = 0x555;
@@ -140,10 +144,14 @@ private:
     // The wave signal TTL when no waveform is selected.
     unsigned int floating_output_ttl = 0;
 
+    bool drive_msb_low_6581 = false;
+    bool twsync_prep;
+
     /// The control register bits. Gate is handled by EnvelopeGenerator.
     //@{
     bool test = false;
     bool sync = false;
+    bool noise = false;
     //@}
 
     /// Test bit is latched at phi2 for the noise XOR.
@@ -151,11 +159,13 @@ private:
 
     /// Tell whether the accumulator MSB was set high on this cycle.
     bool msb_rising = false;
+    bool reserve_msb_rising = false;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
     
-    /// On the 6581, the top bit of the accumulator may be driven low by saw-combined waveforms (sawcon).
-    bool 6581_drive_msb_low = false;
+    bool twsync_cond_prenoise = false;
+    
+    bool twsync_here = false;
 
 private:
     void shift_phase2(unsigned int waveform_old, unsigned int waveform_new);
@@ -195,21 +205,29 @@ public:
      * @param syncDest The oscillator that will be synced
      * @param syncSource The sync source oscillator
      */
-    void synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource) const;
+    void synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource);
 
     /**
      * Write FREQ LO register.
      *
      * @param freq_lo low 8 bits of frequency
      */
-    void writeFREQ_LO(unsigned char freq_lo) { freq = (freq & 0xff00) | (freq_lo & 0xff); }
+    void writeFREQ_LO(unsigned char freq_lo) 
+    {
+        freq = (freq & 0xff00) | (freq_lo & 0xff);
+        if (twsync_prep) reserve_freq = (reserve_freq & 0xff00) | (freq_lo & 0xff);
+    }
 
     /**
      * Write FREQ HI register.
      *
      * @param freq_hi high 8 bits of frequency
      */
-    void writeFREQ_HI(unsigned char freq_hi) { freq = (freq_hi << 8 & 0xff00) | (freq & 0xff); }
+    void writeFREQ_HI(unsigned char freq_hi) 
+    { 
+        freq = (freq_hi << 8 & 0xff00) | (freq & 0xff);
+        if (twsync_prep) reserve_freq = (freq_hi << 8 & 0xff00) | (reserve_freq & 0xff);        
+    }
 
     /**
      * Write PW LO register.
@@ -236,9 +254,13 @@ public:
     * Triggerwave flags.
     *
     * @param sawcon Whether a saw-combined wave was written to the control register
-    * @param twsyncon Whether triggerwave sync modification is on
+    * @param twsyncon Whether triggerwaves are on
     */
-    void wavegenflags(bool sawcon, bool twsyncon);
+    void wavegenflags(bool sawcon, bool tgrwaveson)
+    {
+        drive_msb_low_6581 = sawcon;
+        twsync_prep = tgrwaveson;
+    }
 
     /**
      * SID reset.
@@ -313,13 +335,25 @@ void WaveformGenerator::clock()
     {
         // Calculate new accumulator value;
         const unsigned int accumulator_old = accumulator;
-        accumulator = (accumulator + freq) & 0xffffff;
+        // If twsync is on, hold accumulator if max is reached.
+        accumulator = (twsync_here && (accumulator + freq > 0xffffff)) ? 0xffffff : (accumulator + freq) & 0xffffff;
 
         // Check which bit have changed from low to high
         const unsigned int accumulator_bits_set = ~accumulator_old & accumulator;
 
         // Check whether the MSB is set high. This is used for synchronization.
         msb_rising = (accumulator_bits_set & 0x800000) != 0;
+        
+        if (twsync_prep)
+        {
+            const unsigned int reserve_acc_old = reserve_acc;
+            reserve_acc = (reserve_acc + reserve_freq) & 0xffffff;
+            
+            const unsigned int reserve_acc_bits_set = ~reserve_acc_old & reserve_acc;
+            
+            reserve_msb_rising = (reserve_acc_bits_set & 0x800000) != 0;
+            if (reserve_msb_rising) reserve_msb_rising_count += 1;
+        }
 
         // Shift noise register once for each time accumulator bit 19 is set high.
         // The shift is delayed 2 cycles.
@@ -380,7 +414,11 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
             osc3 = waveform_output;
         }
 
-        if (is6581 && 6581_drive_msb_low) accumulator &= 0x7fffff;
+        if (is6581 && drive_msb_low_6581) 
+        {
+            if (!twsync_here) accumulator &= 0x7fffff;
+            if (twsync_prep) reserve_acc &= 0x7fffff;
+        }
 
         write_shift_register();
     }
