@@ -33,11 +33,6 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 {
     switch (addr)
     {
-    // If triggerwaves are enabled, set PW to 50%
-    case 0x02:
-        if (isTgrWavesEnabled) data = 0;
-    case 0x03:
-        if (isTgrWavesEnabled) data = 0x08;
     // Check and manipulate writes to the control register
     case 0x04:
         // Ignore writes to gate bit to mute voices
@@ -56,10 +51,6 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         }
         break;
 
-    case 0x09:
-        if (isTgrWavesEnabled) data = 0;
-    case 0x0a:
-        if (isTgrWavesEnabled) data = 0x08;
     case 0x0b:
         if (isMuted[1]) data &= 0xfe; 
         sawcon = ((data & 0x20) && (data >= 0x30));
@@ -71,10 +62,6 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         }
         break;
 
-    case 0x10:
-        if (isTgrWavesEnabled) data = 0;
-    case 0x11:
-        if (isTgrWavesEnabled) data = 0x08;
     case 0x12:
         if (isMuted[2]) data &= 0xfe; 
         sawcon = ((data & 0x20) && (data >= 0x30));
