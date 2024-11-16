@@ -369,8 +369,8 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             freq = (syncSource->twsync_cond_prenoise && syncSource->noise) ? syncDest->freq : syncSource->freq;
             if 
             (
-                // If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's MSB rising.
-                (!syncSource->twsync_cond_prenoise && syncSource->msb_rising) ||
+                // If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's (tw0) MSB rising.
+                (!syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising) ||
                 // If source accumulator is being synced to a noticeable degree, reset accumulator on source's first tw0 MSB rising after reset.
                 (syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising && (syncSource->tw0_msb_rising_count == 1))
             )
