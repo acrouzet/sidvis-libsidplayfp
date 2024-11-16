@@ -144,7 +144,6 @@ private:
     // The wave signal TTL when no waveform is selected.
     unsigned int floating_output_ttl = 0;
 
-    // Activate separate tw0 accumulator to switch to when twsync is off.
     bool twsync_prep;
 
     bool drive_msb_low_6581 = false;
@@ -261,7 +260,7 @@ public:
     void twdata(bool triggerwaves, unsigned char tw0_control)
     {
         twsync_prep = triggerwaves;
-		// Accumulator MSB is driven low when a saw-combined wave is selected.
+        // Accumulator MSB is driven low when a saw-combined wave is selected.
         drive_msb_low_6581 = (tw0_control & 0x20) && (tw0_control >= 0x30);
     }
 
@@ -417,10 +416,11 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
             osc3 = waveform_output;
         }
 
-        if (is6581
-                && (waveform & 0x2)
-                && ((waveform_output & 0x800) == 0))
-            accumulator &= 0x7fffff;
+        if (is6581 && drive_msb_low_6581) 
+        {
+            if (!twsync_here) accumulator &= 0x7fffff;
+            if (twsync_prep) tw0_accumulator &= 0x7fffff;
+        }
 
         write_shift_register();
     }
