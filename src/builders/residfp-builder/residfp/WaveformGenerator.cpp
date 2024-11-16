@@ -340,7 +340,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
     if (twsync_prep)
     {
         
-        // Do normal sync on tw0s, reset MSB rising counter when synced.
+        // Do normal sync on tw0, reset tw0 MSB rising counter when synced.
         if (!drive_msb_low_6581 && unlikely(tw0_msb_rising) && syncDest->sync && !(sync && syncSource->tw0_msb_rising))
         {
             syncDest->tw0_accumulator = 0;
@@ -357,7 +357,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             !syncSource->drive_msb_low_6581 &&
             // Don't do twsync if source's (tw0) freq is below ~20 Hz.
             !(syncSource->tw0_freq < 0x0155) &&
-            // Don't do twsync if source tw0 is being synced by at least double its frequency, ensuring its MSB won't rise.
+            // Don't do twsync if source's tw0 accumulator is being synced by at least double its frequency, ensuring its MSB won't rise.
             !(syncSource->sync && ((syncDest->tw0_freq + 1) / syncSource->tw0_freq >= 2))
         );
         // Don't do twsync if noise is on.
@@ -371,7 +371,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             (
                 // If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's MSB rising.
                 (!syncSource->twsync_cond_prenoise && syncSource->msb_rising) ||
-                // If source tw0 accumulator is being synced to a noticeable degree, reset accumulator on source tw0's first MSB rising after reset.
+                // If source accumulator is being synced to a noticeable degree, reset accumulator on source's first tw0 MSB rising after reset.
                 (syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising && (syncSource->tw0_msb_rising_count == 1))
             )
             {
@@ -386,7 +386,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
         }
         
     }
-    else // tw0 (normal) sync
+    else // normal sync (no separate tw0)
     {
         if 
         (

@@ -144,6 +144,7 @@ private:
     // The wave signal TTL when no waveform is selected.
     unsigned int floating_output_ttl = 0;
 
+    // Activate separate tw0 accumulator to switch to when twsync is off.
     bool twsync_prep;
 
     bool drive_msb_low_6581 = false;
@@ -260,6 +261,7 @@ public:
     void twdata(bool triggerwaves, unsigned char tw0_control)
     {
         twsync_prep = triggerwaves;
+		// Accumulator MSB is driven low when a saw-combined wave is selected.
         drive_msb_low_6581 = (tw0_control & 0x20) && (tw0_control >= 0x30);
     }
 
