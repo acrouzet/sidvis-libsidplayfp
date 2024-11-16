@@ -417,11 +417,10 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
             osc3 = waveform_output;
         }
 
-        if (is6581 && drive_msb_low_6581) 
-        {
-            if (!twsync_here) accumulator &= 0x7fffff;
-            if (twsync_prep) tw0_accumulator &= 0x7fffff;
-        }
+        if (is6581
+                && (waveform & 0x2)
+                && ((waveform_output & 0x800) == 0))
+            accumulator &= 0x7fffff;
 
         write_shift_register();
     }
