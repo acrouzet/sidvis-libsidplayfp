@@ -33,54 +33,49 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 {
     switch (addr)
     {
-    // Check and manipulate writes to the control register
     case 0x04:
-        // Ignore writes to gate bit to mute voices
-        if (isMuted[0]) data &= 0xfe;  
+        // Ignore writes to gate bit to mute voices.
+        if (isMuted[0]) data &= 0xfe;
         tw0_control = data;
-        if (isTWEnabled) {
-            // If pulse wave, disable pulse and enable saw
-            if ((data & 0xf0) == 0x40) data ^= 0x60;
-            // If tri+pulse wave with no ringmod, disable pulse
-            if ((data & 0xf4) == 0x50) data &= 0xbf;
-            // If saw-combined wave, disable pulse and tri
-            if (data & 0x20) data &= 0xaf;
-            // If non-noise wave with sync, set wave to saw
-            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
+        if (isTWEnabled) 
+		{   // Don't set wave to sawtooth if write:
+			// - has noise bit set.
+			// - is for tri+pulse wave with ringmod and no sync.
+			// - is for triangle wave with no sync.
+			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			{   // Set wave to sawtooth.
+				data = (data & 0x0f) | 0x20;
+			}
         }
         break;
-
     case 0x0b:
         if (isMuted[1]) data &= 0xfe; 
         tw0_control = data;     
-        if (isTWEnabled) {
-            if ((data & 0xf0) == 0x40) data ^= 0x60;
-            if ((data & 0xf4) == 0x50) data &= 0xbf;
-            if (data & 0x20) data &= 0xaf;
-            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
+        if (isTWEnabled) 
+		{
+			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			{
+				data = (data & 0x0f) | 0x20;
+			}
         }
         break;
-
     case 0x12:
         if (isMuted[2]) data &= 0xfe;
         tw0_control = data;     
-        if (isTWEnabled) {
-            if ((data & 0xf0) == 0x40) data ^= 0x60;
-            if ((data & 0xf4) == 0x50) data &= 0xbf;
-            if (data & 0x20) data &= 0xaf;
-            if ((data & 0x82) == 0x02) data = (data & 0x0f) | 0x20;
+        if (isTWEnabled) 
+		{
+			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			{
+				data = (data & 0x0f) | 0x20;
+			}
         }
         break;
-
     case 0x17:
-        // Ignore writes to filter register to disable filter
+        // Ignore writes to filter register to disable filter.
         if (isFilterDisabled) data &= 0xf0;
         break;
-
     case 0x18:
-        // Ignore writes to volume register to mute samples
-        // Works only for volume-based digis
-        // Trick suggested by LMan
+        // Set master volume permanently to max to mute its output.
         if (isMuted[3]) data |= 0x0f;
         break;
     }

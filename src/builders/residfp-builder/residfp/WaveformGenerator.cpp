@@ -335,58 +335,77 @@ void WaveformGenerator::setPulldownModels(matrix_t* models)
     model_pulldown = models;
 }
 
+void WaveformGenerator::twdata(bool triggerwaves, unsigned char tw0_control)
+{
+	tw0_waveform = (tw0_control >> 4) & 0x0f;
+	
+	if (triggerwaves)
+	{
+		twsync_prep = true;
+		// Accumulator MSB is driven low when a saw-combined wave is selected on 6581.
+		drive_msb_low_6581 = (tw0_waveform & 0x2) && (tw0_waveform >= 0x3);
+	}
+	else 
+	{
+		drive_msb_low_6581 = (waveform & 0x2) && (waveform >= 0x3);
+	}
+	
+	tw0_noise = tw0_waveform & 0x8;
+	tw0_x_tri_xor_saw = (tw0_waveform & 0xf) == (0x1 || 0x2);
+}
+
 void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource)
 {
     if (twsync_prep)
     {
-        
-        // Do normal sync on tw0, reset tw0 MSB rising counter when synced.
+        // Do normal sync on tw0, reset tw0 accumulator fall counter when synced.
         if (!drive_msb_low_6581 && unlikely(tw0_msb_rising) && syncDest->sync && !(sync && syncSource->tw0_msb_rising))
         {
             syncDest->tw0_accumulator = 0;
-            syncDest->tw0_msb_rising_count = 0;
+            syncDest->tw0_fall_count = 0;
         }
+        // All twsync conditions other than noise being disabled.
+        // Conditions determine whether accumulator is being synced to a degree noticeable enough for twsync to be beneficial.
         twsync_cond_prenoise =
         (
-            sync && 
-            // Don't do twsync if sync is enabled on all 3 voices.
+            sync &&
             !(syncSource->sync && syncDest->sync) &&
-            // Don't do twsync if source has test on.
             !syncSource->test &&
-            // Don't do twsync if source's tw0 MSB is driven low by a saw-combined wave.
             !syncSource->drive_msb_low_6581 &&
-            // Don't do twsync if source's (tw0) freq is below ~20 Hz.
+            // Don't do twsync if source's freq is below ~20 Hz.
             !(syncSource->tw0_freq < 0x0155) &&
             // Don't do twsync if source's tw0 accumulator is being synced by at least double its frequency, ensuring its MSB won't rise.
-            !(syncSource->sync && ((syncDest->tw0_freq + 1) / syncSource->tw0_freq >= 2))
+            !(syncSource->sync && (((syncDest->tw0_freq + 1) / syncSource->tw0_freq) <= 2))
         );
-        // Don't do twsync if noise is on.
-        if (twsync_cond_prenoise && !noise)
+        // TWSYNC: Make freq match source, and reset accumulator when a condition is met.
+        if (twsync_cond_prenoise && !tw0_noise)
         {
-            // Twsync: Make freq match source, and reset accumulator when a condition is met.
             twsync_here = true;
-            // Because noise doesn't do twsync (thus doesn't match its freq to source).
-            freq = (syncSource->twsync_cond_prenoise && syncSource->noise) ? syncDest->freq : syncSource->freq;
-            if 
-            (
-                // If source accumulator isn't being synced to a noticeable degree, reset accumulator on source's (tw0) MSB rising.
-                (!syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising) ||
-                // If source accumulator is being synced to a noticeable degree, reset accumulator on source's first tw0 MSB rising after reset.
-                (syncSource->twsync_cond_prenoise && syncSource->tw0_msb_rising && (syncSource->tw0_msb_rising_count == 1))
-            )
-            {
-                accumulator = 0;
-            }
+            // Make freq match the root source of a sync chain if twsync is enabled on 2 channels.
+            // Must be done manually because noise doesn't do twsync (thus doesn't match freq to source, even when the accumulator is noticeably synced).
+            freq = (syncSource->twsync_cond_prenoise) ? syncDest->tw0_freq : syncSource->tw0_freq;
+			if (tw0_falling)
+			{
+				if ((tw0_freq <= syncSource->tw0_freq) || tw0_x_tri_xor_saw)
+				{
+					if (tw0_fall_count == 0) accumulator = 0;
+				}
+				else
+				{
+					if (tw0_fall_count == 1) accumulator = 0;
+				}
+			}
         }
-        else // If twsync isn't being done, match tw0.
+        // If twsync isn't being done, match tw0.
+        else 
         {
             twsync_here = false;
             accumulator = tw0_accumulator;
             freq = tw0_freq;
         }
-        
     }
-    else // normal sync (no separate tw0)
+    // Normal sync when triggerwaves are off.
+    else
     {
         if 
         (
@@ -418,7 +437,6 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     waveform = (control >> 4) & 0x0f;
     test = (control & 0x08) != 0;
     sync = (control & 0x02) != 0;
-    noise = (control & 0x80) != 0;
     
     // Substitution of accumulator MSB when sawtooth = 0, ring_mod = 1.
     ring_msb_mask = ((~control >> 5) & (control >> 2) & 0x1) << 23;
@@ -476,7 +494,7 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
             if (twsync_prep) 
             {
                 tw0_accumulator = 0;
-                tw0_msb_rising_count = 0;
+                tw0_fall_count = 0;
             }
 
             // Flush shift pipeline.
@@ -520,19 +538,28 @@ void WaveformGenerator::reset()
 {
     // accumulator is not changed on reset
     freq = 0;
-    if (twsync_prep) tw0_freq = 0;
     
     pw = 0;
 
     msb_rising = false;
-    if (twsync_prep) tw0_msb_rising = false;
 
     waveform = 0;
     osc3 = 0;
 
     test = false;
     sync = false;
-    noise = false;
+	
+	drive_msb_low_6581 = false;
+	
+	if (twsync_prep) 
+	{
+		tw0_freq = 0;
+		tw0_msb_rising = false;
+		tw0_waveform = 0;
+		tw0_falling = false;
+		tw0_noise = false;
+		tw0_x_tri_xor_saw = false;
+	}
 
     wave = model_wave ? (*model_wave)[0] : nullptr;
     pulldown = nullptr;
@@ -541,7 +568,7 @@ void WaveformGenerator::reset()
     no_noise = 0xfff;
     no_pulse = 0xfff;
     pulse_output = 0xfff;
-
+	
     shift_register_reset = 0;
     shift_register = 0x7fffff;
     // when reset is released the shift register is clocked once

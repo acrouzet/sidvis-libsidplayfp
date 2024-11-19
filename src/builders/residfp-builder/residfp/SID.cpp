@@ -474,22 +474,22 @@ void SID::write(int offset, unsigned char value)
     voiceSync(false);
 }
 
-void SID::twdata(int offset, bool triggerwaves, unsigned char tw0ctrl)
+void SID::twdata(int offset, bool triggerwaves, unsigned char tw0_control)
 {
     twsync_prep = triggerwaves;
     
     switch (offset)
     {
     case 0x04:
-        voice[0].twdata(triggerwaves, tw0ctrl);
+        voice[0].twdata(triggerwaves, tw0_control);
         break;
         
     case 0x0b:
-        voice[1].twdata(triggerwaves, tw0ctrl);
+        voice[1].twdata(triggerwaves, tw0_control);
         break;
         
     case 0x12:  
-        voice[2].twdata(triggerwaves, tw0ctrl);    
+        voice[2].twdata(triggerwaves, tw0_control);    
         break;
 
     default:

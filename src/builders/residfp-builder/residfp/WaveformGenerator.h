@@ -119,6 +119,7 @@ private:
 
     /// The control register right-shifted 4 bits; used for output function table lookup.
     unsigned int waveform = 0;
+	unsigned int tw0_waveform = 0;
 
     unsigned int waveform_output = 0;
 
@@ -126,7 +127,7 @@ private:
     unsigned int accumulator = 0x555555; // Accumulator's even bits are high on powerup
     unsigned int tw0_accumulator = 0x555555;
     
-    unsigned int tw0_msb_rising_count = 0;
+    unsigned int tw0_fall_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
@@ -144,16 +145,16 @@ private:
     // The wave signal TTL when no waveform is selected.
     unsigned int floating_output_ttl = 0;
 
-    bool twsync_prep;
-
-    bool drive_msb_low_6581 = false;
-
     /// The control register bits. Gate is handled by EnvelopeGenerator.
     //@{
     bool test = false;
     bool sync = false;
-    bool noise = false;
     //@}
+	
+	bool drive_msb_low_6581 = false;
+	
+	bool tw0_noise = false;
+	bool tw0_x_tri_xor_saw = false;
 
     /// Test bit is latched at phi2 for the noise XOR.
     bool test_or_reset;
@@ -161,13 +162,16 @@ private:
     /// Tell whether the accumulator MSB was set high on this cycle.
     bool msb_rising = false;
     bool tw0_msb_rising = false;
+	
+	/// Tell whether the tw0 accumulator fell this cycle.
+	bool tw0_falling = false;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
-    
-    bool twsync_cond_prenoise = false;
-    
-    bool twsync_here = false;
-
+	
+	bool twsync_prep = false;
+	bool twsync_cond_prenoise = false;
+	bool twsync_here = false;
+	
 private:
     void shift_phase2(unsigned int waveform_old, unsigned int waveform_new);
 
@@ -257,12 +261,7 @@ public:
      * @param triggerwaves Whether triggerwaves are enabled
      * @param tw0_control Control register value when triggerwaves are disabled
      */
-    void twdata(bool triggerwaves, unsigned char tw0_control)
-    {
-        twsync_prep = triggerwaves;
-        // Accumulator MSB is driven low when a saw-combined wave is selected.
-        drive_msb_low_6581 = (tw0_control & 0x20) && (tw0_control >= 0x30);
-    }
+    void twdata(bool triggerwaves, unsigned char tw0_control);
 
     /**
      * SID reset.
@@ -354,7 +353,9 @@ void WaveformGenerator::clock()
             const unsigned int tw0_accumulator_bits_set = ~tw0_accumulator_old & tw0_accumulator;
             
             tw0_msb_rising = (tw0_accumulator_bits_set & 0x800000) != 0;
-            if (tw0_msb_rising) tw0_msb_rising_count += 1;
+			
+			tw0_falling = (tw0_accumulator_old > tw0_accumulator);
+			if (tw0_falling) tw0_fall_count += 1;
         }
 
         // Shift noise register once for each time accumulator bit 19 is set high.
