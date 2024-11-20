@@ -126,8 +126,11 @@ private:
     /// Current accumulator value.
     unsigned int accumulator = 0x555555; // Accumulator's even bits are high on powerup
     unsigned int tw0_accumulator = 0x555555;
+	
+	unsigned int tw0_accumulator_old = 0;
     
     unsigned int tw0_fall_count = 0;
+	unsigned int req_tw0_fall_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
@@ -151,6 +154,8 @@ private:
     bool sync = false;
     //@}
 	
+	bool is6581; //-V730_NOINIT this is initialized in the SID constructor
+	
 	bool drive_msb_low_6581 = false;
 	
 	bool tw0_noise = false;
@@ -165,8 +170,6 @@ private:
 	
 	/// Tell whether the tw0 accumulator fell this cycle.
 	bool tw0_falling = false;
-
-    bool is6581; //-V730_NOINIT this is initialized in the SID constructor
 	
 	bool twsync_prep = false;
 	bool twsync_cond_prenoise = false;
@@ -334,28 +337,22 @@ void WaveformGenerator::clock()
     }
     else
     {
-        // Calculate new accumulator value;
         const unsigned int accumulator_old = accumulator;
+		
+		// Calculate new accumulator value;
         // If twsync is on, hold accumulator if max is reached.
         accumulator = (twsync_here && (accumulator + freq > 0xffffff)) ? 0xffffff : (accumulator + freq) & 0xffffff;
-
-        // Check which bit have changed from low to high
+		
+        // Check which bits have changed from low to high.
         const unsigned int accumulator_bits_set = ~accumulator_old & accumulator;
-
-        // Check whether the MSB is set high. This is used for synchronization.
+		// Check whether the MSB is set high. This is used for synchronization.
         msb_rising = (accumulator_bits_set & 0x800000) != 0;
         
         if (twsync_prep)
         {
-            const unsigned int tw0_accumulator_old = tw0_accumulator;
+            tw0_accumulator_old = tw0_accumulator;
             tw0_accumulator = (tw0_accumulator + tw0_freq) & 0xffffff;
-            
-            const unsigned int tw0_accumulator_bits_set = ~tw0_accumulator_old & tw0_accumulator;
-            
-            tw0_msb_rising = (tw0_accumulator_bits_set & 0x800000) != 0;
-			
-			tw0_falling = (tw0_accumulator_old > tw0_accumulator);
-			if (tw0_falling) tw0_fall_count += 1;
+            tw0_msb_rising = ((~tw0_accumulator_old & tw0_accumulator) & 0x800000) != 0;
         }
 
         // Shift noise register once for each time accumulator bit 19 is set high.
@@ -417,11 +414,17 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
             osc3 = waveform_output;
         }
 
-        if (is6581 && drive_msb_low_6581) 
+        if (drive_msb_low_6581) 
         {
             if (!twsync_here) accumulator &= 0x7fffff;
             if (twsync_prep) tw0_accumulator &= 0x7fffff;
         }
+		
+		if (twsync_prep)
+		{
+			tw0_falling = tw0_accumulator_old > tw0_accumulator;
+			if (tw0_falling) tw0_fall_count += 1;
+		}
 
         write_shift_register();
     }
