@@ -369,9 +369,7 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
             // Must be done manually because noise doesn't do twsync (thus doesn't match freq to source, even when the accumulator is noticeably synced).
             freq = syncSource->twsync_cond_prenoise ? syncDest->tw0_freq : syncSource->tw0_freq;
 			
-			unsigned int show_1_period_freq = syncSource->sync && (syncSource->tw0_freq <= syncDest->tw0_freq) ? syncDest->tw0_freq : syncSource->tw0_freq;
-			
-			req_tw0_fall_count = (tw0_freq <= show_1_period_freq) || (tw0_waveform == 0x1) || (tw0_waveform == 0x2) || (tw0_fall_count < 2) ? 1 : (drive_msb_low_6581 ? 3 : 2);
+			req_tw0_fall_count = (tw0_waveform == 0x1) || (tw0_waveform == 0x2) || (tw0_fall_count < 2) ? 1 : (drive_msb_low_6581 ? 3 : 2);
 
 			if 
 			(
