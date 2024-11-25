@@ -129,8 +129,8 @@ private:
 	
 	unsigned int tw0_accumulator_old = 0;
     
-    unsigned int tw0_fall_count = 0;
-	unsigned int req_tw0_fall_count = 0;
+	unsigned int tw0_twshold = 0;
+    unsigned int tw0_twshold_x_count = 0;
 
     // Fout = (Fn*Fclk/16777216)Hz
     unsigned int freq = 0;
@@ -154,12 +154,9 @@ private:
     bool sync = false;
     //@}
 	
-	bool is6581; //-V730_NOINIT this is initialized in the SID constructor
-	
-	bool drive_msb_low_6581 = false;
-	
-	bool tw0_noise = false;
-	bool tw0_x_tri_xor_saw = false;
+	bool twsync_prep = false;
+	bool twsync_cond_prenoise = false;
+	bool twsync_here = false;
 
     /// Test bit is latched at phi2 for the noise XOR.
     bool test_or_reset;
@@ -168,12 +165,9 @@ private:
     bool msb_rising = false;
     bool tw0_msb_rising = false;
 	
-	/// Tell whether the tw0 accumulator fell this cycle.
-	bool tw0_falling = false;
+	bool is6581; //-V730_NOINIT this is initialized in the SID constructor
 	
-	bool twsync_prep = false;
-	bool twsync_cond_prenoise = false;
-	bool twsync_here = false;
+	bool drive_msb_low_6581 = false;
 	
 private:
     void shift_phase2(unsigned int waveform_old, unsigned int waveform_new);
@@ -419,12 +413,6 @@ unsigned int WaveformGenerator::output(const WaveformGenerator* ringModulator)
             if (!twsync_here) accumulator &= 0x7fffff;
             if (twsync_prep) tw0_accumulator &= 0x7fffff;
         }
-		
-		if (twsync_prep)
-		{
-			tw0_falling = tw0_accumulator_old > tw0_accumulator;
-			if (tw0_falling) tw0_fall_count += 1;
-		}
 
         write_shift_register();
     }

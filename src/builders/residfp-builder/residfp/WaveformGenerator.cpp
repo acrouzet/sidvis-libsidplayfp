@@ -335,54 +335,86 @@ void WaveformGenerator::setPulldownModels(matrix_t* models)
     model_pulldown = models;
 }
 
+void WaveformGenerator::twdata(bool triggerwaves, unsigned char tw0_control)
+{
+	if (triggerwaves)
+	{
+		twsync_prep = true;
+	
+		tw0_waveform = (tw0_control >> 4) & 0x0f;
+	
+		drive_msb_low_6581 = is6581 && (tw0_waveform & 0x2) && (tw0_waveform >= 0x3);
+	}
+	else
+	{
+		drive_msb_low_6581 = is6581 && (waveform & 0x2) && (waveform >= 0x3);
+	}
+}
+
 void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformGenerator* syncSource)
 {
     if (twsync_prep)
-    {
+	{
 		
-        // Do normal sync on tw0, reset tw0 accumulator fall counter when synced.
-        if (!drive_msb_low_6581 && unlikely(tw0_msb_rising) && syncDest->sync && !(sync && syncSource->tw0_msb_rising))
-        {
-            syncDest->tw0_accumulator = 0;
-            syncDest->tw0_fall_count = 0;
-        }
+		if (drive_msb_low_6581) 
+		{
+			tw0_twshold = 0x7fffff;
+		}
+		else if ((tw0_waveform & 0xb) == 0x1) 
+		{
+			tw0_twshold = 0xbfffff;
+		}
+		else
+		{
+			tw0_twshold = 0xffffff;
+		}
+		
+		if ((tw0_accumulator_old <= tw0_twshold) && ((tw0_accumulator_old + freq > tw0_twshold))) tw0_twshold_x_count += 1;
 		
         // All twsync conditions other than noise being disabled.
-        // Conditions determine whether accumulator is being synced to a degree noticeable enough for twsync to be beneficial.
+        // Conditions determine whether a tw0 accumulator is being synced to a degree noticeable enough for twsync to be beneficial.
         twsync_cond_prenoise =
         (
             sync &&
             !(syncSource->sync && syncDest->sync) &&
             !syncSource->test &&
             !syncSource->drive_msb_low_6581 &&
-            // Don't do twsync if source's freq is below ~20 Hz.
+            // Don't do twsync if the source tw0 freq is below ~20 Hz.
             !(syncSource->tw0_freq < 0x0155) &&
-            // Don't do twsync if source's tw0 accumulator is being synced by at least double its frequency, ensuring its MSB won't rise.
+            // Don't do twsync if the source tw0 is being synced by at least double its frequency, meaning its MSB isn't likely to rise.
             !(syncSource->sync && (((syncDest->tw0_freq + 1) / syncSource->tw0_freq) <= 2))
         );
 		
-        // TWSYNC: Make freq match source, and reset accumulator when a condition is met.
+        // TWSYNC: Make this voice's freq match the source tw0, and reset the accumulator when a condition is met.
         if (twsync_cond_prenoise && !(tw0_waveform & 0x8))
         {
             twsync_here = true;
-            // Make freq match the root source of a sync chain if twsync is enabled on 2 channels.
-            // Must be done manually because noise doesn't do twsync (thus doesn't match freq to source, even when the accumulator is noticeably synced).
+			
+            // Make this voice's freq match the root source tw0 of a sync chain if twsync is enabled on 2 channels.
+            // Must be done manually because noise doesn't do twsync (thus doesn't match a voice's freq to the source tw0, even if its accumulator is noticeably synced).
             freq = syncSource->twsync_cond_prenoise ? syncDest->tw0_freq : syncSource->tw0_freq;
 			
-			req_tw0_fall_count = (tw0_waveform == 0x1) || (tw0_waveform == 0x2) || (tw0_fall_count < 2) ? 1 : (drive_msb_low_6581 ? 3 : 2);
-
-			if 
-			(
-				tw0_falling && 
-				(!syncSource->twsync_cond_prenoise || (syncSource->twsync_cond_prenoise && (syncSource->tw0_fall_count == 1))) && 
-				(tw0_fall_count == req_tw0_fall_count)
+			// The tw0 twshold cross counter increases BEFORE twsync checks, and resets when the tw0 accumulator resets, AFTER twsync checks.	
+			if
+			(   // If the source tw0 is being noticeably synced, only reset this accumulator on the source tw0's first MSB rising.
+				(!syncSource->twsync_cond_prenoise || (syncSource->twsync_cond_prenoise && (syncSource->tw0_twshold_x_count == 0))) &&
+				// If tw0 is synced when the 1st tw0 twshold hasn't been crossed, or if this is the 1st tw0 twshold crossing, reset accumulator.
+				((syncSource->tw0_msb_rising && (tw0_twshold_x_count == 0)) || (tw0_twshold_x_count == 1))
 			)
 			{
 				accumulator = 0;
-			}	
+			}
 		}
+		
+		// Do normal sync on tw0. Reset tw0 twshold cross counter when synced.
+		if (!drive_msb_low_6581 && unlikely(tw0_msb_rising) && syncDest->sync && !(sync && syncSource->tw0_msb_rising))
+        {
+            syncDest->tw0_accumulator = 0;
+            syncDest->tw0_twshold_x_count = 0;
+        }
+		
 		// If twsync isn't being done, match tw0.
-		else 
+        if (!twsync_cond_prenoise || (tw0_waveform & 0x8))
 		{
 			twsync_here = false;
 			accumulator = tw0_accumulator;
@@ -480,7 +512,7 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
             if (twsync_prep) 
             {
                 tw0_accumulator = 0;
-                tw0_fall_count = 0;
+                tw0_twshold_x_count = 0;
             }
 
             // Flush shift pipeline.
@@ -502,22 +534,6 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
             shift_phase2(waveform_prev, waveform);
         }
     }
-}
-
-void WaveformGenerator::twdata(bool triggerwaves, unsigned char tw0_control)
-{
-	if (triggerwaves)
-	{
-		twsync_prep = true;
-	
-		tw0_waveform = (tw0_control >> 4) & 0x0f;
-	
-		drive_msb_low_6581 = is6581 && (tw0_waveform & 0x2) && (tw0_waveform >= 0x3);
-	}
-	else
-	{
-		drive_msb_low_6581 = is6581 && (waveform & 0x2) && (waveform >= 0x3);
-	}
 }
 
 void WaveformGenerator::waveBitfade()
@@ -558,7 +574,6 @@ void WaveformGenerator::reset()
 		tw0_freq = 0;
 		tw0_msb_rising = false;
 		tw0_waveform = 0;
-		tw0_falling = false;
 	}
 
     wave = model_wave ? (*model_wave)[0] : nullptr;

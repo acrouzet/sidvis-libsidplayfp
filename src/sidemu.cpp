@@ -39,10 +39,11 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         tw0_control = data;
         if (isTWEnabled) 
 		{   // Don't set wave to sawtooth if write:
+			// - has no wave selected.
 			// - has noise bit set.
 			// - is for tri+pulse wave with ringmod and no sync.
 			// - is for triangle wave with no sync.
-			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			if (((data & 0xf0) != 0) && !(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
 			{   // Set wave to sawtooth.
 				data = (data & 0x0f) | 0x20;
 			}
@@ -53,7 +54,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         tw0_control = data;     
         if (isTWEnabled) 
 		{
-			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			if (((data & 0xf0) != 0) && !(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
 			{
 				data = (data & 0x0f) | 0x20;
 			}
@@ -64,7 +65,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         tw0_control = data;     
         if (isTWEnabled) 
 		{
-			if (!(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
+			if (((data & 0xf0) != 0) && !(data & 0x80) && ((data & 0xf6) != 0x54) && ((data & 0xf2) != 0x10))
 			{
 				data = (data & 0x0f) | 0x20;
 			}
