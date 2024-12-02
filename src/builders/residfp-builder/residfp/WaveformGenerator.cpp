@@ -362,14 +362,14 @@ void WaveformGenerator::synchronize(WaveformGenerator* syncDest, const WaveformG
 		}
 		else if ((tw0_waveform & 0xb) == 0x1) 
 		{
-			tw0_twshold = 0xbfffff;
+			tw0_twshold = is6581 ? 0xd19999 : 0xbfffff;
 		}
 		else
 		{
 			tw0_twshold = 0xffffff;
 		}
 		
-		if ((tw0_accumulator_old <= tw0_twshold) && ((tw0_accumulator_old + freq > tw0_twshold))) tw0_twshold_x_count += 1;
+		if ((tw0_accumulator_old <= tw0_twshold) && ((tw0_accumulator_old + freq) > tw0_twshold)) tw0_twshold_x_count += 1;
 		
         // All twsync conditions other than noise being disabled.
         // Conditions determine whether a tw0 accumulator is being synced to a degree noticeable enough for twsync to be beneficial.
