@@ -1,5 +1,5 @@
-libsidplayfp
-============
+sidvis-libsidplayfp
+===================
 
 https://github.com/libsidplayfp/libsidplayfp
 
@@ -8,9 +8,12 @@ the reSID SID chip emulation into a cycle-based emulator
 environment, constantly aiming to improve emulation of the
 C64 system and the SID chips.
 
+This fork is meant to be used with the sidvis .wav creator script.
+For information, please go to https://github.com/acrouzet/sidvis
+
 Copyright (c) 2000-2001 Simon White
 Copyright (c) 2007-2010 Antti Lankila
-Copyright (c) 2010-2025 Leandro Nini <drfiemost@users.sourceforge.net>
+Copyright (c) 2010-2024 Leandro Nini <drfiemost@users.sourceforge.net>
 
 -----------------------------------------------------------------------------
 
@@ -65,10 +68,8 @@ enabled by default
 
 --with-simd=<sse4/neon/none>
 enable SIMD code in reSIDfp that might increase resampling performance.
-Requires compiler support for the SIMD instruction set, (i.e. -msse4).
 Be aware that this is processor specific and the compiler could actually produce
-more optimized code with the appropriate flags (i.e. -march=x86-64-v3 -ftree-vectorize).
-Use only if you know what you're doing.
+more optimized code with the appropriate flags. Use only if you know what you're doing.
 neon is currently unimplemented.
 none by default
 
@@ -79,7 +80,7 @@ code execution. The path to testsuite must include terminal path separator
 disabled by default
 
 --enable-tests
-enables unit tests. Use "make check" to launch the testsuite
+enables unit tests. Requires libUnitTest++ installed. Use "make check" to launch the testsuite
 disabled by default
 
 --enable-hardsid
