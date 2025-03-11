@@ -156,6 +156,8 @@ public:
     void debug(const bool enable, FILE *out) { m_c64.debug(enable, out); }
 
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
+	
+    void tgrwaves(unsigned int sidNum, bool enable);
 
     void filter(unsigned int sidNum, bool enable);
 

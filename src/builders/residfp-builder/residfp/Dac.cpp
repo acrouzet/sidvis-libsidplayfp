@@ -26,7 +26,9 @@
 
 namespace reSIDfp
 {
-
+// MOSFET_LEAKAGE_6581 = 0.0075;
+// MOSFET_LEAKAGE_8580 = 0.0035;
+// MOSFET leakage is disabled.
 constexpr double MOSFET_LEAKAGE_6581 = 0;
 constexpr double MOSFET_LEAKAGE_8580 = 0;
 

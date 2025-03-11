@@ -29,20 +29,42 @@ const char sidemu::ERR_UNSUPPORTED_FREQ[] = "Unable to set desired output freque
 const char sidemu::ERR_INVALID_SAMPLING[] = "Invalid sampling method.";
 const char sidemu::ERR_INVALID_CHIP[]     = "Invalid chip model.";
 
-void sidemu::writeReg(uint_least8_t addr, uint8_t data)
+void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
 {
     switch (addr)
     {
     case 0x04:
-        // Ignore writes to control register to mute voices
-        // Leave test/ring/sync bits untouched
-        if (isMuted[0]) data &= 0x0e;
+        // Ignore writes to gate bit to mute voices
+        if (isMuted[0]) data &= 0xfe;
+        // Check and manipulate the control register
+        // If saw is on, and tri or pulse is on, set the sawcon flag    
+        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
+        if (isTgrWavesEnabled) {
+            // If saw is on, disable tri and pulse
+            if (data & 0x20) data &= 0xaf;
+            // If only pulse is on, disable pulse and enable saw
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            // If tri and pulse are on, disable pulse
+            if ((data & 0x50) == 0x50) data &= 0xbf;
+        }
         break;
     case 0x0b:
-        if (isMuted[1]) data &= 0x0e;
+        if (isMuted[1]) data &= 0xfe;
+        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
+        if (isTgrWavesEnabled) {
+            if (data & 0x20) data &= 0xaf;
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            if ((data & 0x50) == 0x50) data &= 0xbf;
+        }
         break;
     case 0x12:
-        if (isMuted[2]) data &= 0x0e;
+        if (isMuted[2]) data &= 0xfe;
+        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
+        if (isTgrWavesEnabled) {
+            if (data & 0x20) data &= 0xaf;
+            if ((data & 0xf0) == 0x40) data ^= 0x60;
+            if ((data & 0x50) == 0x50) data &= 0xbf;
+        }
         break;
     case 0x17:
         // Ignore writes to filter register to disable filter
@@ -57,12 +79,19 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     }
 
     write(addr, data);
+    
+    twflags(addr, sawcon);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
 {
     if (voice < 4)
         isMuted[voice] = mute;
+}
+
+void sidemu::tgrwaves(bool enable)
+{
+    isTgrWavesEnabled = enable;
 }
 
 void sidemu::filter(bool enable)

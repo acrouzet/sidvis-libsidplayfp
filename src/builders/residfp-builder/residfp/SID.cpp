@@ -478,6 +478,27 @@ void SID::write(int offset, unsigned char value)
     voiceSync(false);
 }
 
+void SID::twflags(int offset, bool sawcon)
+{
+    switch (offset)
+    {
+    case 0x04:
+        voice[0].twflags(sawcon);
+        break;
+
+    case 0x0b:
+        voice[1].twflags(sawcon);
+        break;
+
+    case 0x12:  
+        voice[2].twflags(sawcon);
+        break;
+
+    default:
+        break;
+    }
+}
+
 void SID::setSamplingParameters(double clockFrequency, SamplingMethod method, double samplingFrequency)
 {
     externalFilter.setClockFrequency(clockFrequency);

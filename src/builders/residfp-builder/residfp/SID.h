@@ -207,6 +207,14 @@ public:
      * @param value value to write
      */
     void write(int offset, unsigned char value);
+	
+    /**
+     * Triggerwave flags.
+     *
+     * @param offset The flag's corresponding chip register
+     * @param sawcon Whether a saw-combined wave was written to the control register
+     */
+    void twflags(int offset, bool sawcon);
 
     /**
      * Setting of SID sampling parameters.

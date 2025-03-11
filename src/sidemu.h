@@ -71,6 +71,7 @@ protected:
     bool m_status = true;
     bool isLocked = false;
 
+    bool isTgrWavesEnabled = false;
     bool isFilterDisabled = false;
 
     /// Flags for muted voices
@@ -80,8 +81,10 @@ protected:
 
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
+    
+    virtual void twflags(uint_least8_t addr, bool sawcon) = 0;
 
-    void writeReg(uint_least8_t addr, uint8_t data) override final;
+    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon) override final;
 
 public:
     sidemu(sidbuilder *builder) :
@@ -116,6 +119,11 @@ public:
      * @param mute true to mute channel
      */
     void voice(unsigned int voice, bool mute);
+    
+    /**
+     * Enable/disable wave-switching for oscilloscope external trigger signals.
+     */
+    void tgrwaves(bool enable);
 
     /**
      * Enable/disable filter.

@@ -140,6 +140,14 @@ public:
      * @param enable true unmutes the channel, false mutes it.
      */
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
+    
+    /**
+    * Enable/disable wave-switching for oscilloscope external trigger signals.
+    *
+    * @param sidNum the SID chip, 0 for the first one, 1 for the second or 2 for the third.
+    * @param enable true enable trigger waves, false disable it.
+    */
+    void tgrwaves(unsigned int sidNum, bool enable);
 
     /**
      * Enable/disable SID filter.
