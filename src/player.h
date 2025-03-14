@@ -157,6 +157,8 @@ public:
 
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
 	
+    void envelope(unsigned int sidNum, bool enable);
+	
     void tgrwaves(unsigned int sidNum, bool enable);
 
     void filter(unsigned int sidNum, bool enable);

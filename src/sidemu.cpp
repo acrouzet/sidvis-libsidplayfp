@@ -34,9 +34,13 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
     switch (addr)
     {
     case 0x04:
-        // Ignore writes to gate bit to mute voices
-        if (isMuted[0]) data &= 0xfe;
-        // Check and manipulate the control register
+        // Force gate off to mute voices
+        if (isMuted[0]) {
+            data &= 0xfe;
+        // Force gate on to disable envelopes
+        } else if (isEnvDisabled) {
+            data |= 0x01;
+        }
         // If saw is on, and tri or pulse is on, set the sawcon flag    
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
         if (isTgrWavesEnabled) {
@@ -48,8 +52,19 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
+    case 0x05:
+        if (isEnvDisabled) data = 0x00;
+        break;
+    case 0x06:
+        if (isEnvDisabled) data = 0x80;
+        break;
+        
     case 0x0b:
-        if (isMuted[1]) data &= 0xfe;
+        if (isMuted[1]) {
+            data &= 0xfe;
+        } else if (isEnvDisabled) {
+            data |= 0x01;
+        }
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
         if (isTgrWavesEnabled) {
             if (data & 0x20) data &= 0xaf;
@@ -57,8 +72,19 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
+    case 0x0c:
+        if (isEnvDisabled) data = 0x00;
+        break;
+    case 0x0d:
+        if (isEnvDisabled) data = 0x80;
+        break;
+        
     case 0x12:
-        if (isMuted[2]) data &= 0xfe;
+        if (isMuted[2]) {
+            data &= 0xfe;
+        } else if (isEnvDisabled) {
+            data |= 0x01;
+        }
         if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
         if (isTgrWavesEnabled) {
             if (data & 0x20) data &= 0xaf;
@@ -66,14 +92,19 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
+    case 0x13:
+        if (isEnvDisabled) data = 0x00;
+        break;
+    case 0x14:
+        if (isEnvDisabled) data = 0x80;
+        break;
+        
     case 0x17:
         // Ignore writes to filter register to disable filter
         if (isFilterDisabled) data &= 0xf0;
         break;
     case 0x18:
-        // Ignore writes to volume register to mute samples
-        // Works only for volume-based digis
-        // Trick suggested by LMan
+        // Force max volume to mute D418 volume-based digis
         if (isMuted[3]) data |= 0x0f;
         break;
     }
@@ -87,6 +118,11 @@ void sidemu::voice(unsigned int voice, bool mute)
 {
     if (voice < 4)
         isMuted[voice] = mute;
+}
+
+void sidemu::envelope(bool enable)
+{
+    isEnvDisabled = !enable;
 }
 
 void sidemu::tgrwaves(bool enable)

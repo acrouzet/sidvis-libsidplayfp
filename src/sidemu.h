@@ -71,6 +71,7 @@ protected:
     bool m_status = true;
     bool isLocked = false;
 
+    bool isEnvDisabled = false;
     bool isTgrWavesEnabled = false;
     bool isFilterDisabled = false;
 
@@ -119,6 +120,11 @@ public:
      * @param mute true to mute channel
      */
     void voice(unsigned int voice, bool mute);
+    
+    /**
+     * Enable/disable envelopes.
+     */
+    void envelope(bool enable);
     
     /**
      * Enable/disable wave-switching for oscilloscope external trigger signals.

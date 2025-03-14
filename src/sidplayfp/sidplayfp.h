@@ -141,6 +141,14 @@ public:
      */
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
     
+   /**
+    * Enable/disable envelope.
+    *
+    * @param sidNum the SID chip, 0 for the first one, 1 for the second or 2 for the third.
+    * @param enable true enable envelopes, false disable them (set voices to constant amplitude).
+    */
+    void envelope(unsigned int sidNum, bool enable);
+	
     /**
     * Enable/disable wave-switching for oscilloscope external trigger signals.
     *

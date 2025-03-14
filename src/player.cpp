@@ -211,6 +211,13 @@ void Player::mute(unsigned int sidNum, unsigned int voice, bool enable)
         s->voice(voice, enable);
 }
 
+void Player::envelope(unsigned int sidNum, bool enable)
+{
+    sidemu *s = m_mixer.getSid(sidNum);
+    if (s != nullptr)
+        s->envelope(enable);
+}
+
 void Player::tgrwaves(unsigned int sidNum, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);

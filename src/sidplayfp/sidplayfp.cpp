@@ -96,6 +96,11 @@ void sidplayfp::mute(unsigned int sidNum, unsigned int voice, bool enable)
     sidplayer.mute(sidNum, voice, enable);
 }
 
+void sidplayfp::envelope(unsigned int sidNum, bool enable)
+{
+    sidplayer.envelope(sidNum, enable);
+}
+
 void sidplayfp::tgrwaves(unsigned int sidNum, bool enable)
 {
     sidplayer.tgrwaves(sidNum, enable);
