@@ -56,7 +56,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
         if (isEnvDisabled) data = 0x00;
         break;
     case 0x06:
-        if (isEnvDisabled) data = 0x80;
+        if (isEnvDisabled) data = 0xf0;
         break;
         
     case 0x0b:
@@ -76,7 +76,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
         if (isEnvDisabled) data = 0x00;
         break;
     case 0x0d:
-        if (isEnvDisabled) data = 0x80;
+        if (isEnvDisabled) data = 0xf0;
         break;
         
     case 0x12:
@@ -96,7 +96,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
         if (isEnvDisabled) data = 0x00;
         break;
     case 0x14:
-        if (isEnvDisabled) data = 0x80;
+        if (isEnvDisabled) data = 0xf0;
         break;
         
     case 0x17:
