@@ -177,9 +177,14 @@ void HardSID::write(uint_least8_t addr, uint8_t data)
     ::write(m_handle, &packet, sizeof(packet));
 }
 
-void HardSID::twflags(uint_least8_t addr, bool sawcon)
+void HardSID::OS_write(uint_least8_t addr, uint8_t data)
 {
-    twflags(addr, sawcon);
+    OS_write(addr, data);
+}
+
+void HardSID::sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool tf_enable)
+{
+    sidvis(addr, env_disable, tw_enable, tf_enable);
 }
 
 void HardSID::event()

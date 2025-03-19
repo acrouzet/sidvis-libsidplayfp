@@ -114,7 +114,7 @@ constexpr unsigned int shift_mask =
  * Normally, when noise is selected along with another waveform,
  * c1 and c2 are closed and the output bits pull down the corresponding
  * shift register bits.
- * 
+ *
  *        noi_out_x             noi_out_x+1
  *          ^                     ^
  *          |                     |
@@ -434,9 +434,11 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     }
 }
 
-void WaveformGenerator::twflags(bool sawcon)
+void WaveformGenerator::OS_writeCONTROL_REG(unsigned char control)
 {
-    drive_msb_low_6581 = sawcon;
+    // On the 6581, the top bit of the accumulator may be driven low by combined waveforms
+    // when sawtooth is selected
+    drive_msb_low = is6581 && (control & 0x20) && (control >= 0x30);
 }
 
 void WaveformGenerator::waveBitfade()

@@ -119,15 +119,24 @@ private:
     void state_change();
 
 public:
-    /**
+   /**
      * SID clocking.
      */
     void clock();
 
+    bool use_eg;
+
     /**
      * Get the Envelope Generator digital output.
      */
-    unsigned int output() const { return envelope_counter; }
+    unsigned int output() const
+    {
+        if (use_eg) {
+            return envelope_counter;
+        } else {
+            return 0xff;
+        }
+    }
 
     /**
      * SID reset.

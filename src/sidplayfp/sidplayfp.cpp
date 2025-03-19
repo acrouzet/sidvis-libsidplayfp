@@ -101,9 +101,14 @@ void sidplayfp::envelope(unsigned int sidNum, bool enable)
     sidplayer.envelope(sidNum, enable);
 }
 
-void sidplayfp::tgrwaves(unsigned int sidNum, bool enable)
+void sidplayfp::triggerwaves(unsigned int sidNum, bool enable)
 {
-    sidplayer.tgrwaves(sidNum, enable);
+    sidplayer.triggerwaves(sidNum, enable);
+}
+
+void sidplayfp::triggerfilter(unsigned int sidNum, bool enable)
+{
+    sidplayer.triggerfilter(sidNum, enable);
 }
 
 void sidplayfp::filter(unsigned int sidNum, bool enable)

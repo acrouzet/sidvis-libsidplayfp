@@ -122,6 +122,10 @@ private:
      */
     float oscDAC[4096];
 
+    bool triggerfilter;
+
+    bool filter_active;
+
 private:
     /**
      * Age the bus value and zero it if it's TTL has expired.
@@ -207,14 +211,10 @@ public:
      * @param value value to write
      */
     void write(int offset, unsigned char value);
-	
-    /**
-     * Triggerwave flags.
-     *
-     * @param offset The flag's corresponding chip register
-     * @param sawcon Whether a saw-combined wave was written to the control register
-     */
-    void twflags(int offset, bool sawcon);
+
+    void OS_write(int offset, unsigned char value);
+
+    void sidvis(int offset, bool env_disable, bool tw_enable, bool tf_enable);
 
     /**
      * Setting of SID sampling parameters.
@@ -351,7 +351,8 @@ int SID::clock(unsigned int cycles, short* buf)
                 voice[2].envelope()->clock();
 
                 const int sidOutput = static_cast<int>(filter->clock(voice[0], voice[1], voice[2]));
-                const int c64Output = externalFilter.clock(sidOutput - (1 << 15));
+                const int c64Output = triggerfilter && filter_active ?
+                    externalFilter.clock(-(sidOutput - (1 << 15))) : externalFilter.clock(sidOutput - (1 << 15));
                 if (unlikely(resampler->input(c64Output)))
                 {
                     buf[s++] = resampler->getOutput(scaleFactor);

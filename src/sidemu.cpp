@@ -29,21 +29,19 @@ const char sidemu::ERR_UNSUPPORTED_FREQ[] = "Unable to set desired output freque
 const char sidemu::ERR_INVALID_SAMPLING[] = "Invalid sampling method.";
 const char sidemu::ERR_INVALID_CHIP[]     = "Invalid chip model.";
 
-void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
+void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 {
+    OS_data = data;
+
     switch (addr)
     {
     case 0x04:
-        // Force gate off to mute voices
+        // Force envelope on and gate off to mute voices
         if (isMuted[0]) {
+            doEnvDisable = false;
             data &= 0xfe;
-        // Force gate on to disable envelopes
-        } else if (isEnvDisabled) {
-            data |= 0x01;
-        }
-        // If saw is on, and tri or pulse is on, set the sawcon flag    
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
-        if (isTgrWavesEnabled) {
+        } else if (isEnvDisabled) doEnvDisable = true;
+        if (isTwEnabled) {
             // If saw is on, disable tri and pulse
             if (data & 0x20) data &= 0xaf;
             // If only pulse is on, disable pulse and enable saw
@@ -52,66 +50,56 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data, bool sawcon)
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
-    case 0x05:
-        if (isEnvDisabled) data = 0x00;
-        break;
-    case 0x06:
-        if (isEnvDisabled) data = 0xf0;
-        break;
-        
+
     case 0x0b:
         if (isMuted[1]) {
+            doEnvDisable = false;
             data &= 0xfe;
-        } else if (isEnvDisabled) {
-            data |= 0x01;
-        }
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
-        if (isTgrWavesEnabled) {
+        } else if (isEnvDisabled) doEnvDisable = true;
+        if (isTwEnabled) {
             if (data & 0x20) data &= 0xaf;
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
-    case 0x0c:
-        if (isEnvDisabled) data = 0x00;
-        break;
-    case 0x0d:
-        if (isEnvDisabled) data = 0xf0;
-        break;
-        
+
     case 0x12:
         if (isMuted[2]) {
+            doEnvDisable = false;
             data &= 0xfe;
-        } else if (isEnvDisabled) {
-            data |= 0x01;
-        }
-        if ((data & 0x20) && ((data & 0x50) != 0)) sawcon = true;
-        if (isTgrWavesEnabled) {
+        } else if (isEnvDisabled) doEnvDisable = true;
+        if (isTwEnabled) {
             if (data & 0x20) data &= 0xaf;
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
-    case 0x13:
-        if (isEnvDisabled) data = 0x00;
-        break;
-    case 0x14:
-        if (isEnvDisabled) data = 0xf0;
-        break;
-        
+
     case 0x17:
-        // Ignore writes to filter register to disable filter
-        if (isFilterDisabled) data &= 0xf0;
+        OS_res_filt = OS_data;
+        // Ignore writes to filter registers to disable filter
+        if (doTfFilterDisable || isFilterDisabled) data = 0x00;
         break;
     case 0x18:
         // Force max volume to mute D418 volume-based digis
         if (isMuted[3]) data |= 0x0f;
+        // Triggerfilter: Disable filter unless low or
+        // band+low pass modes are on
+        doTfFilterDisable = isTfEnabled && ((data & 0x50) != 0x10);
+        // Write 0 to filter registers to disable filter
+        if (doTfFilterDisable || isFilterDisabled) {
+            write(0x17, 0x00);
+            data &= 0x8f;
+        } else {
+            write(0x17, OS_res_filt);
+        }
         break;
     }
 
     write(addr, data);
-    
-    twflags(addr, sawcon);
+    OS_write(addr, OS_data);
+
+    sidvis(addr, doEnvDisable, isTwEnabled, isTfEnabled);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
@@ -125,9 +113,14 @@ void sidemu::envelope(bool enable)
     isEnvDisabled = !enable;
 }
 
-void sidemu::tgrwaves(bool enable)
+void sidemu::triggerwaves(bool enable)
 {
-    isTgrWavesEnabled = enable;
+    isTwEnabled = enable;
+}
+
+void sidemu::triggerfilter(bool enable)
+{
+    isTfEnabled = enable;
 }
 
 void sidemu::filter(bool enable)

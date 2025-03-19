@@ -68,11 +68,17 @@ protected:
     /// Current position in buffer
     int m_bufferpos = 0;
 
+    uint8_t OS_data = 0;
+    uint8_t OS_res_filt = 0;
+
     bool m_status = true;
     bool isLocked = false;
 
     bool isEnvDisabled = false;
-    bool isTgrWavesEnabled = false;
+    bool doEnvDisable = false;
+    bool isTwEnabled = false;
+    bool isTfEnabled = false;
+    bool doTfFilterDisable = false;
     bool isFilterDisabled = false;
 
     /// Flags for muted voices
@@ -82,10 +88,11 @@ protected:
 
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
-    
-    virtual void twflags(uint_least8_t addr, bool sawcon) = 0;
+    virtual void OS_write(uint_least8_t addr, uint8_t data) = 0;
 
-    void writeReg(uint_least8_t addr, uint8_t data, bool sawcon) override final;
+    virtual void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool tf_enable) = 0;
+
+    void writeReg(uint_least8_t addr, uint8_t data) override final;
 
 public:
     sidemu(sidbuilder *builder) :
@@ -120,16 +127,21 @@ public:
      * @param mute true to mute channel
      */
     void voice(unsigned int voice, bool mute);
-    
+
     /**
      * Enable/disable envelopes.
      */
     void envelope(bool enable);
-    
+
     /**
-     * Enable/disable wave-switching for oscilloscope external trigger signals.
+     * Enable/disable waveform manipulation for oscilloscope external trigger signals.
      */
-    void tgrwaves(bool enable);
+    void triggerwaves(bool enable);
+
+    /**
+     * Enable/disable filter manipulation for oscilloscope external trigger signals.
+     */
+    void triggerfilter(bool enable);
 
     /**
      * Enable/disable filter.

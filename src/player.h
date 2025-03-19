@@ -159,7 +159,9 @@ public:
 	
     void envelope(unsigned int sidNum, bool enable);
 	
-    void tgrwaves(unsigned int sidNum, bool enable);
+    void triggerwaves(unsigned int sidNum, bool enable);
+	
+    void triggerfilter(unsigned int sidNum, bool enable);
 
     void filter(unsigned int sidNum, bool enable);
 

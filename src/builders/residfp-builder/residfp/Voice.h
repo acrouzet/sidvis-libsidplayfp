@@ -112,16 +112,6 @@ public:
         waveformGenerator.writeCONTROL_REG(control);
         envelopeGenerator.writeCONTROL_REG(control);
     }
-	
-    /**
-     * Triggerwave flags.
-     *
-     * @param sawcon Whether a saw-combined wave is on
-     */
-    void twflags(bool sawcon)
-    {
-        waveformGenerator.twflags(sawcon);
-    }   
 
     /**
      * SID reset.
