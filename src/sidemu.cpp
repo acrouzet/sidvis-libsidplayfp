@@ -103,19 +103,14 @@ void sidemu::envelope(bool enable)
     isEnvDisabled = !enable;
 }
 
-void sidemu::kinkdac(bool enable);
-}
+void sidemu::kinkdac(bool enable)
+{
     isKinkDisabled = !enable;
 }
 
 void sidemu::triggerwaves(bool enable)
 {
     isTwEnabled = enable;
-}
-
-void sidemu::triggerfilter(bool enable)
-{
-    isTfEnabled = enable;
 }
 
 void sidemu::filter(bool enable)
