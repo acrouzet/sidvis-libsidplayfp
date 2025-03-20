@@ -78,28 +78,18 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     case 0x17:
         OS_res_filt = OS_data;
         // Ignore writes to filter registers to disable filter
-        if (doTfFilterDisable || isFilterDisabled) data = 0x00;
+        if (isFilterDisabled) data = 0x00;
         break;
     case 0x18:
         // Force max volume to mute D418 volume-based digis
         if (isMuted[3]) data |= 0x0f;
-        // Triggerfilter: Disable filter unless low or
-        // band+low pass modes are on
-        doTfFilterDisable = isTfEnabled && ((data & 0x50) != 0x10);
-        // Write 0 to filter registers to disable filter
-        if (doTfFilterDisable || isFilterDisabled) {
-            write(0x17, 0x00);
-            data &= 0x8f;
-        } else {
-            write(0x17, OS_res_filt);
-        }
         break;
     }
 
     write(addr, data);
     OS_write(addr, OS_data);
 
-    sidvis(addr, doEnvDisable, isTwEnabled, isTfEnabled);
+    sidvis(addr, doEnvDisable, isKinkDisabled, isTwEnabled);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
@@ -111,6 +101,11 @@ void sidemu::voice(unsigned int voice, bool mute)
 void sidemu::envelope(bool enable)
 {
     isEnvDisabled = !enable;
+}
+
+void sidemu::kinkdac(bool enable);
+}
+    isKinkDisabled = !enable;
 }
 
 void sidemu::triggerwaves(bool enable)

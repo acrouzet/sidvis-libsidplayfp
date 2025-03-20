@@ -216,6 +216,13 @@ void Player::envelope(unsigned int sidNum, bool enable)
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
         s->envelope(enable);
+	
+void Player::kinkdac(unsigned int sidNum, bool enable)
+{
+    sidemu *s = m_mixer.getSid(sidNum);
+    if (s != nullptr)
+        s->kinkdac(enable);
+}
 }
 
 void Player::triggerwaves(unsigned int sidNum, bool enable)
@@ -223,13 +230,6 @@ void Player::triggerwaves(unsigned int sidNum, bool enable)
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
         s->triggerwaves(enable);
-}
-
-void Player::triggerfilter(unsigned int sidNum, bool enable)
-{
-    sidemu *s = m_mixer.getSid(sidNum);
-    if (s != nullptr)
-        s->triggerfilter(enable);
 }
 
 void Player::filter(unsigned int sidNum, bool enable)

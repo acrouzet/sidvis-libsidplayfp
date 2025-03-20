@@ -76,9 +76,8 @@ protected:
 
     bool isEnvDisabled = false;
     bool doEnvDisable = false;
+    bool isKinkDisabled = false;
     bool isTwEnabled = false;
-    bool isTfEnabled = false;
-    bool doTfFilterDisable = false;
     bool isFilterDisabled = false;
 
     /// Flags for muted voices
@@ -90,7 +89,7 @@ protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
     virtual void OS_write(uint_least8_t addr, uint8_t data) = 0;
 
-    virtual void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool tf_enable) = 0;
+    virtual void sidvis(uint_least8_t addr, bool env_disable, bool kink_disable, bool tw_enable) = 0;
 
     void writeReg(uint_least8_t addr, uint8_t data) override final;
 
@@ -128,20 +127,11 @@ public:
      */
     void voice(unsigned int voice, bool mute);
 
-    /**
-     * Enable/disable envelopes.
-     */
     void envelope(bool enable);
+	
+    void kinkdac(bool enable);
 
-    /**
-     * Enable/disable waveform manipulation for oscilloscope external trigger signals.
-     */
     void triggerwaves(bool enable);
-
-    /**
-     * Enable/disable filter manipulation for oscilloscope external trigger signals.
-     */
-    void triggerfilter(bool enable);
 
     /**
      * Enable/disable filter.
