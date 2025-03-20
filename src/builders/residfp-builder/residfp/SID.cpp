@@ -463,7 +463,6 @@ void SID::write(int offset, unsigned char value)
     case 0x17: // Filter control
         filter6581->writeRES_FILT(value);
         filter8580->writeRES_FILT(value);
-        filter_active = (value & 0x70) != 0x00;
         break;
 
     case 0x18: // Volume and filter modes
@@ -520,8 +519,6 @@ void SID::sidvis(int offset, bool env_disable, bool tw_enable, bool tf_enable)
     default:
         break;
     }
-
-    triggerfilter = tf_enable;
 }
 
 void SID::setSamplingParameters(double clockFrequency, SamplingMethod method, double samplingFrequency)

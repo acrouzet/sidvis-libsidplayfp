@@ -122,10 +122,6 @@ private:
      */
     float oscDAC[4096];
 
-    bool triggerfilter;
-
-    bool filter_active;
-
 private:
     /**
      * Age the bus value and zero it if it's TTL has expired.
@@ -351,8 +347,7 @@ int SID::clock(unsigned int cycles, short* buf)
                 voice[2].envelope()->clock();
 
                 const int sidOutput = static_cast<int>(filter->clock(voice[0], voice[1], voice[2]));
-                const int c64Output = triggerfilter && filter_active ?
-                    externalFilter.clock(-(sidOutput - (1 << 15))) : externalFilter.clock(sidOutput - (1 << 15));
+                const int c64Output = externalFilter.clock(sidOutput - (1 << 15));
                 if (unlikely(resampler->input(c64Output)))
                 {
                     buf[s++] = resampler->getOutput(scaleFactor);
