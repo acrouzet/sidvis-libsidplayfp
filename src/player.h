@@ -156,14 +156,16 @@ public:
     void debug(const bool enable, FILE *out) { m_c64.debug(enable, out); }
 
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
-	
-    void envelope(unsigned int sidNum, bool enable);
-	
-    void kinkdac(unsigned int sidNum, bool enable);
-	
-    void triggerwaves(unsigned int sidNum, bool enable);
 
     void filter(unsigned int sidNum, bool enable);
+
+    void dontfilter(unsigned int sidNum, unsigned int voice, bool enable);
+
+    void noenvelopes(unsigned int sidNum, bool enable);
+
+    void triggerwaves(unsigned int sidNum, bool enable);
+
+    void nokinks(unsigned int sidNum, bool enable);
 
     const char *error() const { return m_errorString; }
 

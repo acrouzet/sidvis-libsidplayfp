@@ -140,12 +140,6 @@ public:
      * @param enable true unmutes the channel, false mutes it.
      */
     void mute(unsigned int sidNum, unsigned int voice, bool enable);
-    
-    void envelope(unsigned int sidNum, bool enable);
-	
-    void kinkdac(unsigned int sidNum, bool enable);
-	
-    void triggerwaves(unsigned int sidNum, bool enable);
 
     /**
      * Enable/disable SID filter.
@@ -156,6 +150,14 @@ public:
      * @since 2.10
      */
     void filter(unsigned int sidNum, bool enable);
+
+    void dontfilter(unsigned int sidNum, unsigned int voice, bool enable);
+
+    void noenvelopes(unsigned int sidNum, bool enable);
+
+    void triggerwaves(unsigned int sidNum, bool enable);
+
+    void nokinks(unsigned int sidNum, bool enable);
 
     /**
      * Get the current playing time.

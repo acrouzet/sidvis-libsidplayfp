@@ -56,7 +56,7 @@ public:
     void write(uint_least8_t addr, uint8_t data) override;
     void OS_write(uint_least8_t addr, uint8_t data);
 
-    void sidvis(uint_least8_t addr, bool env_disable, bool kink_disable, bool tw_enable);
+    void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable);
 
     // c64sid functions
     void reset(uint8_t volume) override;

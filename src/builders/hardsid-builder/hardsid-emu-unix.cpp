@@ -182,9 +182,9 @@ void HardSID::OS_write(uint_least8_t addr, uint8_t data)
     OS_write(addr, data);
 }
 
-void HardSID::sidvis(uint_least8_t addr, bool env_disable, bool kink_disable, bool tw_enable)
+void HardSID::sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable)
 {
-    sidvis(addr, env_disable, kink_disable, tw_enable);
+    sidvis(addr, env_disable, tw_enable, kink_disable);
 }
 
 void HardSID::event()

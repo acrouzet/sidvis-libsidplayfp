@@ -210,7 +210,7 @@ public:
 
     void OS_write(int offset, unsigned char value);
 
-    void sidvis(int offset, bool env_disable, bool kink_disable, bool tw_enable);
+    void sidvis(int offset, bool env_disable, bool tw_enable, bool kink_disable);
 
     /**
      * Setting of SID sampling parameters.

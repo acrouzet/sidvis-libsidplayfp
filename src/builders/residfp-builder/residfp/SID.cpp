@@ -498,7 +498,7 @@ void SID::OS_write(int offset, unsigned char value)
     }
 }
 
-void SID::sidvis(int offset, bool env_disable, bool kink_disable, bool tw_enable)
+void SID::sidvis(int offset, bool env_disable, bool tw_enable, bool kink_disable)
 {
     switch (offset)
     {

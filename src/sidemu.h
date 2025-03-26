@@ -69,19 +69,18 @@ protected:
     int m_bufferpos = 0;
 
     uint8_t OS_data = 0;
-    uint8_t OS_res_filt = 0;
 
     bool m_status = true;
     bool isLocked = false;
 
-    bool isEnvDisabled = false;
-    bool doEnvDisable = false;
-    bool isKinkDisabled = false;
-    bool isTwEnabled = false;
-    bool isFilterDisabled = false;
-
-    /// Flags for muted voices
+    /// Flags for output maniptulation
     std::bitset<4> isMuted;
+    bool isFilterDisabled      = false;
+    std::bitset<3> isNotFiltered;
+    bool isNoEnvelopesEnabled  = false;
+    bool disableEnvelopes      = false;
+    bool isTriggerWavesEnabled = false;
+    bool isNoKinksEnabled      = false;
 
     std::string m_error;
 
@@ -89,7 +88,7 @@ protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
     virtual void OS_write(uint_least8_t addr, uint8_t data) = 0;
 
-    virtual void sidvis(uint_least8_t addr, bool env_disable, bool kink_disable, bool tw_enable) = 0;
+    virtual void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable) = 0;
 
     void writeReg(uint_least8_t addr, uint8_t data) override final;
 
@@ -127,16 +126,18 @@ public:
      */
     void voice(unsigned int voice, bool mute);
 
-    void envelope(bool enable);
-	
-    void kinkdac(bool enable);
-
-    void triggerwaves(bool enable);
-
     /**
      * Enable/disable filter.
      */
     void filter(bool enable);
+
+    void dontfilter(unsigned int voice, bool enable);
+
+    void noenvelopes(bool enable);
+
+    void triggerwaves(bool enable);
+
+    void nokinks(bool enable);
 
     /**
      * Set SID model.

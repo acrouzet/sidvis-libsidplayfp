@@ -35,15 +35,17 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
 
     switch (addr)
     {
-    case 0x04:
+    case 0x04: // Channel 1 Control
         // Force envelope on and gate off to mute voices
         if (isMuted[0]) {
-            doEnvDisable = false;
+            disableEnvelopes = false;
             data &= 0xfe;
-        } else if (isEnvDisabled) doEnvDisable = true;
-        if (isTwEnabled) {
+        } else if (isNoEnvelopesEnabled) {
+            disableEnvelopes = true;
+        }
+        if (isTriggerWavesEnabled) {
             // If saw is on, disable tri and pulse
-            if (data & 0x20) data &= 0xaf;
+            if  (data & 0x20)          data &= 0xaf;
             // If only pulse is on, disable pulse and enable saw
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             // If tri and pulse are on, disable pulse
@@ -51,36 +53,41 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
         }
         break;
 
-    case 0x0b:
+    case 0x0b: // Channel 2 Control
         if (isMuted[1]) {
-            doEnvDisable = false;
+            disableEnvelopes = false;
             data &= 0xfe;
-        } else if (isEnvDisabled) doEnvDisable = true;
-        if (isTwEnabled) {
-            if (data & 0x20) data &= 0xaf;
+        } else if (isNoEnvelopesEnabled) {
+            disableEnvelopes = true;
+        }
+        if (isTriggerWavesEnabled) {
+            if  (data & 0x20)          data &= 0xaf;
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
 
-    case 0x12:
+    case 0x12: // Channel 3 Control
         if (isMuted[2]) {
-            doEnvDisable = false;
+            disableEnvelopes = false;
             data &= 0xfe;
-        } else if (isEnvDisabled) doEnvDisable = true;
-        if (isTwEnabled) {
-            if (data & 0x20) data &= 0xaf;
+        } else if (isNoEnvelopesEnabled) {
+            disableEnvelopes = true;
+        }
+        if (isTriggerWavesEnabled) {
+            if  (data & 0x20)          data &= 0xaf;
             if ((data & 0xf0) == 0x40) data ^= 0x60;
             if ((data & 0x50) == 0x50) data &= 0xbf;
         }
         break;
 
-    case 0x17:
-        OS_res_filt = OS_data;
-        // Ignore writes to filter registers to disable filter
-        if (isFilterDisabled) data = 0x00;
+    case 0x17: // Resonance / Filter Channels
+        if (isFilterDisabled) data  = 0xf0;
+        if (isNotFiltered[0]) data &= 0xfe;
+        if (isNotFiltered[1]) data &= 0xfd;
+        if (isNotFiltered[2]) data &= 0xfb;
         break;
-    case 0x18:
+    case 0x18: // Filter Mode / Master Volume
         // Force max volume to mute D418 volume-based digis
         if (isMuted[3]) data |= 0x0f;
         break;
@@ -89,7 +96,7 @@ void sidemu::writeReg(uint_least8_t addr, uint8_t data)
     write(addr, data);
     OS_write(addr, OS_data);
 
-    sidvis(addr, doEnvDisable, isKinkDisabled, isTwEnabled);
+    sidvis(addr, disableEnvelopes, isTriggerWavesEnabled, isNoKinksEnabled);
 }
 
 void sidemu::voice(unsigned int voice, bool mute)
@@ -98,24 +105,30 @@ void sidemu::voice(unsigned int voice, bool mute)
         isMuted[voice] = mute;
 }
 
-void sidemu::envelope(bool enable)
+void sidemu::filter(bool enable)
 {
-    isEnvDisabled = !enable;
+    isFilterDisabled = !enable;
 }
 
-void sidemu::kinkdac(bool enable)
+void sidemu::dontfilter(unsigned int voice, bool enable)
 {
-    isKinkDisabled = !enable;
+    if (voice < 3)
+        isNotFiltered[voice] = enable;
+}
+
+void sidemu::noenvelopes(bool enable)
+{
+    isNoEnvelopesEnabled = enable;
 }
 
 void sidemu::triggerwaves(bool enable)
 {
-    isTwEnabled = enable;
+    isTriggerWavesEnabled = enable;
 }
 
-void sidemu::filter(bool enable)
+void sidemu::nokinks(bool enable)
 {
-    isFilterDisabled = !enable;
+    isNoKinksEnabled = enable;
 }
 
 bool sidemu::lock(EventScheduler *scheduler)
