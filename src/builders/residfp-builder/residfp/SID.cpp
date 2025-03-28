@@ -172,6 +172,10 @@ void SID::mute(unsigned int vn, bool enable)
 {
 	if (vn <  3) voice[vn].envelope()->outputMute = enable;
 	if (vn == 3) muteVolume = enable;
+	
+	std::bitset<3> triActiveVoice;
+	triActiveVoice[vn] = !enable && (voice[vn].wave()->readWave() == 0x1);
+	triActive = triActiveVoice[0] || triActiveVoice[1] || triActiveVoice[2];
 }
 
 void SID::enableFilter(bool enable)
@@ -494,18 +498,18 @@ void SID::write(int offset, unsigned char value)
         break;
 
     case 0x17: // Filter control
-        if (dontFilterAnything || forbiddenMode) value = 0;
+        if (dontFilterAnything || filterOffCond) value = 0;
 		if (dontFilterVoice[0]) value &= 0xfe;
         if (dontFilterVoice[1]) value &= 0xfd;
         if (dontFilterVoice[2]) value &= 0xfb;
         filter6581->writeRES_FILT(value);
         filter8580->writeRES_FILT(value);
-		filterApplied = ((value & 0x07) != 0);
+		filterActive = (value & 0x07) != 0;
         break;
 
     case 0x18: // Volume and filter modes
-		forbiddenMode = (triggerwaves && ((value & 0x70) != (0x10 || 0x30)));
-		if ((noEnvelopes && !filterApplied) || forbiddenMode) value &= 0x8f;
+		filterOffCond = triggerwaves && !triActive && ((value & 0x70) != (0x10 || 0x30));
+		if ((noEnvelopes && !filterActive) || filterOffCond) value &= 0x8f;
 		if (muteVolume) value |= 0x0f;
 		filter6581->writeMODE_VOL(value);
         filter8580->writeMODE_VOL(value);
@@ -515,11 +519,10 @@ void SID::write(int offset, unsigned char value)
         break;
     }
 	
-	if (forbiddenMode) 
-	{
+	if (filterOffCond) {
 		filter6581->writeRES_FILT(0);
 		filter8580->writeRES_FILT(0);
-		filterApplied = false;
+		filterActive = false;
 	}
 
     // Update voicesync just in case.

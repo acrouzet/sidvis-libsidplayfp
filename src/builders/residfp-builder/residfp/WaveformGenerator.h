@@ -268,6 +268,8 @@ public:
      */
     unsigned int readFreq() const { return freq; }
 
+	unsigned int readWave() const { return waveform; }
+
     /**
      * Read test value.
      */
