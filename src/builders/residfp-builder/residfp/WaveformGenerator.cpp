@@ -352,13 +352,27 @@ void WaveformGenerator::set_no_noise_or_noise_output()
 }
 
 void WaveformGenerator::writeCONTROL_REG(unsigned char control)
-{
-    const unsigned int waveform_prev = waveform;
+{	
+	const unsigned int waveform_prev = waveform;
     const bool test_prev = test;
-
+	
     waveform = (control >> 4) & 0x0f;
     test = (control & 0x08) != 0;
     sync = (control & 0x02) != 0;
+	
+	// On the 6581, the top bit of the accumulator may be driven low by combined waveforms
+    // when sawtooth is selected
+    driveMSBLow = is6581 && (waveform & 0x2) && (waveform > 0x2);
+	
+	if (triggerwaves)
+	{
+		// If saw is on, disable tri and pulse
+		if (waveform &  0x2) waveform &= 0xa;
+		// If only pulse is on, disable pulse and enable saw
+		if (waveform == 0x4) waveform ^= 0x6;
+		// If tri and pulse are on, disable pulse
+		if (waveform == 0x5) waveform &= 0xb;
+	}	
 
     // Substitution of accumulator MSB when sawtooth = 0, ring_mod = 1.
     ring_msb_mask = ((~control >> 5) & (control >> 2) & 0x1) << 23;
@@ -367,7 +381,7 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
     {
         // Set up waveform tables
         wave = (*model_wave)[waveform & 0x3];
-        // We assume tha combinations including noise
+        // We assume that combinations including noise
         // behave the same as without
         switch (waveform & 0x7)
         {
@@ -432,13 +446,6 @@ void WaveformGenerator::writeCONTROL_REG(unsigned char control)
             shift_phase2(waveform_prev, waveform);
         }
     }
-}
-
-void WaveformGenerator::OS_writeCONTROL_REG(unsigned char control)
-{
-    // On the 6581, the top bit of the accumulator may be driven low by combined waveforms
-    // when sawtooth is selected
-    drive_msb_low = is6581 && (control & 0x20) && (control >= 0x30);
 }
 
 void WaveformGenerator::waveBitfade()

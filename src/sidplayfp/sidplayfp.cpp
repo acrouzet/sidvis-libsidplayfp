@@ -101,14 +101,14 @@ void sidplayfp::filter(unsigned int sidNum, bool enable)
     sidplayer.filter(sidNum, enable);
 }
 
-void sidplayfp::dontfilter(unsigned int sidNum, unsigned int voice, bool enable)
+void sidplayfp::dontFilter(unsigned int sidNum, unsigned int voice, bool enable)
 {
-    sidplayer.dontfilter(sidNum, voice, enable);
+    sidplayer.dontFilter(sidNum, voice, enable);
 }
 
-void sidplayfp::noenvelopes(unsigned int sidNum, bool enable)
+void sidplayfp::envelopes(unsigned int sidNum, bool enable)
 {
-    sidplayer.noenvelopes(sidNum, enable);
+    sidplayer.envelopes(sidNum, enable);
 }
 
 void sidplayfp::triggerwaves(unsigned int sidNum, bool enable)
@@ -116,9 +116,9 @@ void sidplayfp::triggerwaves(unsigned int sidNum, bool enable)
     sidplayer.triggerwaves(sidNum, enable);
 }
 
-void sidplayfp::nokinks(unsigned int sidNum, bool enable)
+void sidplayfp::kinkDAC(unsigned int sidNum, bool enable)
 {
-    sidplayer.nokinks(sidNum, enable);
+    sidplayer.kinkDAC(sidNum, enable);
 }
 
 void sidplayfp::debug(bool enable, FILE *out)

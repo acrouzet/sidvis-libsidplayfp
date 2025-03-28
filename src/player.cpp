@@ -208,7 +208,7 @@ void Player::mute(unsigned int sidNum, unsigned int voice, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
-        s->voice(voice, enable);
+		s->mute(voice, enable);
 }
 
 void Player::filter(unsigned int sidNum, bool enable)
@@ -218,32 +218,32 @@ void Player::filter(unsigned int sidNum, bool enable)
         s->filter(enable);
 }
 
-void Player::dontfilter(unsigned int sidNum, unsigned int voice, bool enable)
+void Player::dontFilter(unsigned int sidNum, unsigned int voice, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
-        s->dontfilter(voice, enable);
+        s->dontFilter(voice, enable);
 }
 
-void Player::noenvelopes(unsigned int sidNum, bool enable)
+void Player::envelopes(unsigned int sidNum, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
-        s->noenvelopes(enable);
+        s->enableEnvelopes(enable);
 }
 
 void Player::triggerwaves(unsigned int sidNum, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
-        s->triggerwaves(enable);
+        s->enableTriggerwaves(enable);
 }
 
-void Player::nokinks(unsigned int sidNum, bool enable)
+void Player::kinkDAC(unsigned int sidNum, bool enable)
 {
     sidemu *s = m_mixer.getSid(sidNum);
     if (s != nullptr)
-        s->nokinks(enable);
+        s->enableKinkDAC(enable);
 }
 
 /**

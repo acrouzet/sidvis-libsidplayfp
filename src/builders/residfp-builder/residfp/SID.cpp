@@ -168,10 +168,43 @@ void SID::setFilter8580Curve(double filterCurve)
     filter8580->setFilterCurve(filterCurve);
 }
 
+void SID::mute(unsigned int vn, bool enable)
+{
+	if (vn <  3) voice[vn].envelope()->outputMute = enable;
+	if (vn == 3) muteVolume = enable;
+}
+
 void SID::enableFilter(bool enable)
 {
-    filter6581->enable(enable);
+    dontFilterAnything = !enable;
+	filter6581->enable(enable);
     filter8580->enable(enable);
+}
+
+void SID::dontFilter(unsigned int vn, bool enable)
+{
+	dontFilterVoice[vn] = enable;
+}
+
+void SID::enableEnvelopes(bool enable)
+{
+	noEnvelopes = !enable;
+	voice[0].envelope()->outputEnvelope = enable;
+	voice[1].envelope()->outputEnvelope = enable;
+	voice[2].envelope()->outputEnvelope = enable;
+}
+
+void SID::enableTriggerwaves(bool enable)
+{
+	triggerwaves = enable;
+	voice[0].wave()->triggerwaves = enable;
+	voice[1].wave()->triggerwaves = enable;
+	voice[2].wave()->triggerwaves = enable;
+}
+
+void SID::enableKinkDAC(bool enable)
+{
+	getKinky = enable;
 }
 
 void SID::voiceSync(bool sync)
@@ -461,64 +494,36 @@ void SID::write(int offset, unsigned char value)
         break;
 
     case 0x17: // Filter control
+        if (dontFilterAnything || forbiddenMode) value = 0;
+		if (dontFilterVoice[0]) value &= 0xfe;
+        if (dontFilterVoice[1]) value &= 0xfd;
+        if (dontFilterVoice[2]) value &= 0xfb;
         filter6581->writeRES_FILT(value);
         filter8580->writeRES_FILT(value);
+		filterApplied = ((value & 0x07) != 0);
         break;
 
     case 0x18: // Volume and filter modes
-        filter6581->writeMODE_VOL(value);
+		forbiddenMode = (triggerwaves && ((value & 0x70) != (0x10 || 0x30)));
+		if ((noEnvelopes && !filterApplied) || forbiddenMode) value &= 0x8f;
+		if (muteVolume) value |= 0x0f;
+		filter6581->writeMODE_VOL(value);
         filter8580->writeMODE_VOL(value);
         break;
 
     default:
         break;
     }
+	
+	if (forbiddenMode) 
+	{
+		filter6581->writeRES_FILT(0);
+		filter8580->writeRES_FILT(0);
+		filterApplied = false;
+	}
 
     // Update voicesync just in case.
     voiceSync(false);
-}
-
-void SID::OS_write(int offset, unsigned char value)
-{
-    switch (offset)
-    {
-    case 0x04:
-        voice[0].wave()->OS_writeCONTROL_REG(value);
-        break;
-
-    case 0x0b:
-        voice[1].wave()->OS_writeCONTROL_REG(value);
-        break;
-
-    case 0x12:
-        voice[2].wave()->OS_writeCONTROL_REG(value);
-
-    default:
-        break;
-    }
-}
-
-void SID::sidvis(int offset, bool env_disable, bool tw_enable, bool kink_disable)
-{
-    switch (offset)
-    {
-    case 0x04:
-        voice[0].wave()->triggerwaves = tw_enable;
-        voice[0].envelope()->use_eg = !env_disable;
-        break;
-
-    case 0x0b:
-        voice[1].wave()->triggerwaves = tw_enable;
-        voice[1].envelope()->use_eg = !env_disable;
-        break;
-
-    case 0x12:
-        voice[2].wave()->triggerwaves = tw_enable;
-        voice[2].envelope()->use_eg = !env_disable;
-
-    default:
-        break;
-    }
 }
 
 void SID::setSamplingParameters(double clockFrequency, SamplingMethod method, double samplingFrequency)

@@ -68,37 +68,21 @@ protected:
     /// Current position in buffer
     int m_bufferpos = 0;
 
-    uint8_t OS_data = 0;
-
     bool m_status = true;
     bool isLocked = false;
-
-    /// Flags for output maniptulation
-    std::bitset<4> isMuted;
-    bool isFilterDisabled      = false;
-    std::bitset<3> isNotFiltered;
-    bool isNoEnvelopesEnabled  = false;
-    bool disableEnvelopes      = false;
-    bool isTriggerWavesEnabled = false;
-    bool isNoKinksEnabled      = false;
 
     std::string m_error;
 
 protected:
     virtual void write(uint_least8_t addr, uint8_t data) = 0;
-    virtual void OS_write(uint_least8_t addr, uint8_t data) = 0;
-
-    virtual void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable) = 0;
-
-    void writeReg(uint_least8_t addr, uint8_t data) override final;
+    
+	void writeReg(uint_least8_t addr, uint8_t data) override final;
 
 public:
     sidemu(sidbuilder *builder) :
         m_builder(builder),
-        m_error("N/A")
-    {
-        isMuted.reset();
-    }
+        m_error("N/A") {}
+		
     ~sidemu() override = default;
 
     /**
@@ -122,22 +106,22 @@ public:
      * Mute/unmute voice.
      *
      * @param voice SID voice channels from 0 to 2, or 3 for samples
-     * @param mute true to mute channel
+     * @param enable true to mute channel
      */
-    void voice(unsigned int voice, bool mute);
+    virtual void mute(unsigned int voice, bool enable) = 0;
 
     /**
      * Enable/disable filter.
      */
-    void filter(bool enable);
+    virtual void filter(bool enable) = 0;
 
-    void dontfilter(unsigned int voice, bool enable);
+    virtual void dontFilter(unsigned int voice, bool enable) = 0;
 
-    void noenvelopes(bool enable);
-
-    void triggerwaves(bool enable);
-
-    void nokinks(bool enable);
+    virtual void enableEnvelopes(bool enable) = 0;
+	
+    virtual void enableTriggerwaves(bool enable) = 0;
+	
+    virtual void enableKinkDAC(bool enable) = 0;
 
     /**
      * Set SID model.

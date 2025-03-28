@@ -32,6 +32,8 @@
 
 #include "sidcxx11.h"
 
+#include <bitset>
+
 namespace reSIDfp
 {
 
@@ -207,10 +209,39 @@ public:
      * @param value value to write
      */
     void write(int offset, unsigned char value);
-
-    void OS_write(int offset, unsigned char value);
-
-    void sidvis(int offset, bool env_disable, bool tw_enable, bool kink_disable);
+	
+	void mute(unsigned int vn, bool enable);
+	
+	/**
+     * Enable filter emulation.
+     *
+     * @param enable false to turn off filter emulation
+     */
+    void enableFilter(bool enable);
+	
+	void dontFilter(unsigned int vn, bool enable);
+	
+	void enableEnvelopes(bool enable);
+	
+    void enableTriggerwaves(bool enable);
+	
+    void enableKinkDAC(bool enable);
+	
+	bool muteVolume;
+	
+	bool forbiddenMode;
+	
+	std::bitset<3> dontFilterVoice;
+	
+	bool dontFilterAnything;
+	
+	bool filterApplied;
+	
+	bool noEnvelopes;
+	
+	bool triggerwaves;
+	
+	bool getKinky;
 
     /**
      * Setting of SID sampling parameters.
@@ -284,13 +315,6 @@ public:
      * @see Filter8580::setFilterCurve(double)
      */
     void setFilter8580Curve(double filterCurve);
-
-    /**
-     * Enable filter emulation.
-     *
-     * @param enable false to turn off filter emulation
-     */
-    void enableFilter(bool enable);
 };
 
 } // namespace reSIDfp

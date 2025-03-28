@@ -151,13 +151,13 @@ public:
      */
     void filter(unsigned int sidNum, bool enable);
 
-    void dontfilter(unsigned int sidNum, unsigned int voice, bool enable);
+    void dontFilter(unsigned int sidNum, unsigned int voice, bool enable);
 
-    void noenvelopes(unsigned int sidNum, bool enable);
+    void envelopes(unsigned int sidNum, bool enable);
 
     void triggerwaves(unsigned int sidNum, bool enable);
 
-    void nokinks(unsigned int sidNum, bool enable);
+    void kinkDAC(unsigned int sidNum, bool enable);
 
     /**
      * Get the current playing time.

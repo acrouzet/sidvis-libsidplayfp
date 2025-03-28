@@ -98,16 +98,34 @@ void ReSIDfp::write(uint_least8_t addr, uint8_t data)
     m_sid.write(addr, data);
 }
 
-void ReSIDfp::OS_write(uint_least8_t addr, uint8_t data)
+void ReSIDfp::mute(unsigned int voice, bool enable)
 {
-    clock();
-    m_sid.OS_write(addr, data);
+	m_sid.mute(voice, enable);
 }
 
-void ReSIDfp::sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable)
+void ReSIDfp::filter(bool enable)
 {
-    clock();
-    m_sid.sidvis(addr, env_disable, tw_enable, kink_disable);
+	m_sid.enableFilter(enable);
+}
+
+void ReSIDfp::dontFilter(unsigned int voice, bool enable)
+{
+    m_sid.dontFilter(voice, enable);
+}
+
+void ReSIDfp::enableEnvelopes(bool enable)
+{
+    m_sid.enableEnvelopes(enable);
+}
+
+void ReSIDfp::enableTriggerwaves(bool enable)
+{
+	m_sid.enableTriggerwaves(enable);
+}
+
+void ReSIDfp::enableKinkDAC(bool enable)
+{
+	m_sid.enableKinkDAC(enable);
 }
 
 void ReSIDfp::clock()
@@ -115,11 +133,6 @@ void ReSIDfp::clock()
     const event_clock_t cycles = eventScheduler->getTime(EVENT_CLOCK_PHI1) - m_accessClk;
     m_accessClk += cycles;
     m_bufferpos += m_sid.clock(cycles, m_buffer+m_bufferpos);
-}
-
-void ReSIDfp::filter(bool enable)
-{
-      m_sid.enableFilter(enable);
 }
 
 void ReSIDfp::sampling(float systemclock, float freq,

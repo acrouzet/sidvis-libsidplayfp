@@ -124,18 +124,21 @@ public:
      */
     void clock();
 
-    bool use_eg;
+    bool outputMute;
+	bool outputEnvelope;
 
     /**
      * Get the Envelope Generator digital output.
      */
     unsigned int output() const
     {
-        if (use_eg) {
-            return envelope_counter;
-        } else {
-            return 0xff;
-        }
+		if (outputMute) {
+			return 0;
+		} else if (!outputEnvelope) {
+			return 0xff;
+		} else {
+			return envelope_counter;
+		}
     }
 
     /**

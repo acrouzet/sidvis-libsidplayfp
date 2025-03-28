@@ -145,6 +145,9 @@ private:
     bool test = false;
     bool sync = false;
     //@}
+	
+    /// Drive the MSB of the accumulator low.
+    bool driveMSBLow = false;
 
     /// Test bit is latched at phi2 for the noise XOR.
     bool test_or_reset;
@@ -153,9 +156,6 @@ private:
     bool msb_rising = false;
 
     bool is6581; //-V730_NOINIT this is initialized in the SID constructor
-
-    /// Drive the MSB of the accuulator low.
-    bool drive_msb_low = false;
 
     /// The other two waveform generators, for syncing and ring-mod.
     //@{
@@ -241,8 +241,6 @@ public:
      */
     void writeCONTROL_REG(unsigned char control);
 
-    void OS_writeCONTROL_REG(unsigned char control);
-
     /**
      * SID reset.
      */
@@ -279,8 +277,8 @@ public:
      * Read sync value from following voice.
      */
     bool readFollowingVoiceSync() const { return nextVoice->sync; }
-
-    bool triggerwaves;
+	
+	bool triggerwaves;
 };
 
 } // namespace reSIDfp
@@ -384,7 +382,7 @@ unsigned int WaveformGenerator::output()
             osc3 = waveform_output;
         }
 
-        if (drive_msb_low)
+        if (driveMSBLow)
         {
             msb_rising = false;
             accumulator &= 0x7fffff;

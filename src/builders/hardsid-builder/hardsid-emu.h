@@ -134,9 +134,14 @@ public:
 
     uint8_t read(uint_least8_t addr) override;
     void write(uint_least8_t addr, uint8_t data) override;
-    void OS_write(uint_least8_t addr, uint8_t data);
 
-    void sidvis(uint_least8_t addr, bool env_disable, bool tw_enable, bool kink_disable);
+	// sidvis functions
+	void mute(unsigned int voice, bool enable) {}
+    void filter(bool enable);
+	void dontFilter(unsigned int voice, bool enable) {}
+    void enableEnvelopes(bool enable) {}
+    void enableTriggerwaves(bool enable) {}
+    void enableKinkDAC(bool enable) {}
 
     // c64sid functions
     void reset(uint8_t volume) override;
@@ -148,7 +153,6 @@ public:
 
     // HardSID specific
     void flush();
-    void filter(bool enable);
 
     // Must lock the SID before using the standard functions.
     bool lock(EventScheduler *env) override;
