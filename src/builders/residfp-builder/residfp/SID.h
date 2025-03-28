@@ -229,13 +229,13 @@ public:
 	
 	bool muteVolume;
 	
-	bool filterOffCond;
+	bool disableFilter;
+	
+	bool forceFilterOff;
 	
 	std::bitset<3> dontFilterVoice;
 	
-	bool dontFilterAnything;
-	
-	bool filterActive;
+	bool filterVoiceSelected;
 	
 	bool noEnvelopes;
 	
@@ -373,7 +373,7 @@ int SID::clock(unsigned int cycles, short* buf)
                 voice[2].envelope()->clock();
 
                 const int sidOutput = static_cast<int>(filter->clock(voice[0], voice[1], voice[2]));
-                const int c64Output = triggerwaves && filterActive ? 
+                const int c64Output = triggerwaves && (filterVoiceSelected || !forceFilterOff) ? 
 					externalFilter.clock(-(sidOutput - (1 << 15))) : externalFilter.clock(sidOutput - (1 << 15));
 
                 if (unlikely(resampler->input(c64Output)))
